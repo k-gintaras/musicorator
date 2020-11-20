@@ -1,0 +1,5 @@
+<input [(ngModel)]="folder" placeholder="folder/to/open" />
+<button (click)="getFiles()">Show Txt Files</button>
+<div *ngFor="let file of files">
+  <div>{{ file }}</div>
+</div>
