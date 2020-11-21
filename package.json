@@ -2,10 +2,10 @@
   "name": "app-name",
   "productName": "app-name",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Sort music, add tags, copy all files by tags.",
   "main": "src/index.js",
   "scripts": {
-    "electron": "npm --prefix ./app-name/ run build && npm --prefix ./ start",
+    "electron": "npm --prefix ./musicorator/ run build && npm --prefix ./ start",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
@@ -14,8 +14,8 @@
   },
   "keywords": [],
   "author": {
-    "name": "// TODO: ",
-    "email": "// TODO: "
+    "name": "Ubaby",
+    "email": "emnomage@yahoo.com"
   },
   "license": "MIT",
   "config": {
