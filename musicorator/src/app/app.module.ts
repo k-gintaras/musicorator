@@ -10,6 +10,7 @@ import { MusicTaggingComponent } from './music-tagging/music-tagging.component';
 import { PopupComponent } from './popup/popup.component';
 import { PrettyCodeComponent } from './pretty-code/pretty-code.component';
 import { SortableSearchableTableComponent } from './sortable-searchable-table/sortable-searchable-table.component';
+import { AntiSpamClickDirective } from './anti-spam-click.directive';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { SortableSearchableTableComponent } from './sortable-searchable-table/so
     PopupComponent,
     PrettyCodeComponent,
     SortableSearchableTableComponent,
+    AntiSpamClickDirective,
   ],
   imports: [BrowserModule, AppRoutingModule, FormsModule],
   providers: [],
