@@ -74,7 +74,7 @@ export class ElectronCommunicatorService {
             subscriber.next('C:/Users');
             break;
           case 'getFilesByType':
-            subscriber.next('testdata');
+            subscriber.next(['testdata', 't2']);
             break;
           default:
             break;

@@ -1,8 +1,30 @@
+// angular imports
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
+
+// material imports
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSortModule } from '@angular/material/sort';
+import { MatInputModule } from '@angular/material/input';
+
+// other angular
+import { DragDropModule } from '@angular/cdk/drag-drop';
+
+// other
+import { NgxElectronModule } from 'ngx-electron';
+
+// components and services
 import { DragEditUniqueChipsComponent } from './drag-edit-unique-chips/drag-edit-unique-chips.component';
 import { MusicSorterComponent } from './music-sorter/music-sorter.component';
 import { MusicTaggerListComponent } from './music-tagger-list/music-tagger-list.component';
@@ -24,7 +46,24 @@ import { AntiSpamClickDirective } from './anti-spam-click.directive';
     SortableSearchableTableComponent,
     AntiSpamClickDirective,
   ],
-  imports: [BrowserModule, AppRoutingModule, FormsModule],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    FormsModule,
+    MatChipsModule,
+    DragDropModule,
+    MatIconModule,
+    BrowserAnimationsModule,
+    MatButtonModule,
+    MatTableModule,
+    NgxElectronModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    MatCheckboxModule,
+    MatProgressBarModule,
+    MatSortModule,
+    MatInputModule,
+  ],
   providers: [],
   bootstrap: [AppComponent],
 })
