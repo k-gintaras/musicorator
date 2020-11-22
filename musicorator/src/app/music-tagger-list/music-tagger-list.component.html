@@ -6,8 +6,17 @@
       [currentMetadataObject]="currentMetaDataObject"
     ></app-music-tagging>
   </div>
-  <div class="container-fluid" *ngFor="let file of folders">
-    <div class="row" [ngClass]="currentFile === file ? 'row selected' : 'row'">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="checkbox">
+        <mat-checkbox [(ngModel)]="isAutoplay">Auto Play</mat-checkbox>
+      </div>
+    </div>
+    <div
+      *ngFor="let file of folders"
+      class="row"
+      [ngClass]="currentFile === file ? 'row selected' : 'row'"
+    >
       <div
         appAntiSpamClick
         (debounceClick)="setCurrentFile(file)"

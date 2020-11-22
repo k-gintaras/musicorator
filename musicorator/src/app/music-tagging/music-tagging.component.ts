@@ -1,10 +1,20 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ElectronCommunicatorService } from '../electron-communicator.service';
 import { HelperService } from '../helper.service';
 import { PopupService } from '../popup/popup.service';
 import { SuggestionService } from './suggestion.service';
 
+export enum KEY_CODE {
+  ENTER = 'Enter',
+}
 @Component({
   selector: 'app-music-tagging',
   templateUrl: './music-tagging.component.html',
@@ -34,6 +44,16 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
     'initialKey',
     'title',
   ];
+
+  isSaveOnEnter = true;
+  @HostListener('window:keyup', ['$event'])
+  keyEvent(event: KeyboardEvent): void {
+    if (event.key === KEY_CODE.ENTER) {
+      if (this.isSaveOnEnter) {
+        this.saveSongData();
+      }
+    }
+  }
 
   constructor(
     private communicator: ElectronCommunicatorService,

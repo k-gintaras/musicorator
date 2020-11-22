@@ -50,7 +50,8 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
 }
 
 .selected {
-  color: grey;
+  color: rgb(0, 93, 136);
+  font-weight: bolder;
 }
 
 .not-selected {

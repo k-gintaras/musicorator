@@ -1,7 +1,18 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ElectronCommunicatorService } from '../electron-communicator.service';
 import { HelperService } from '../helper.service';
+
+export enum KEY_CODE {
+  RIGHT_ARROW = 'ArrowRight',
+  LEFT_ARROW = 'ArrowLeft',
+}
 
 @Component({
   selector: 'app-music-tagger-list',
@@ -26,6 +37,24 @@ export class MusicTaggerListComponent implements OnInit, OnDestroy {
   @Input() fileContains = '.mp3';
   folders: string[] = [];
 
+  // allow next song
+  currentFilePositionInArray = 0;
+  isAutoplay = false;
+
+  @HostListener('window:keyup', ['$event'])
+  keyEvent(event: KeyboardEvent): void {
+    if (event.key === KEY_CODE.RIGHT_ARROW) {
+      console.log('click right');
+      this.loadNextTrack();
+    }
+
+    if (event.key === KEY_CODE.LEFT_ARROW) {
+      console.log('click left');
+
+      this.loadPreviousTrack();
+    }
+  }
+
   constructor(
     private communicator: ElectronCommunicatorService,
     private helper: HelperService
@@ -46,9 +75,37 @@ export class MusicTaggerListComponent implements OnInit, OnDestroy {
     }
   }
 
+  loadPreviousTrack(): void {
+    this.setNextOrPreviousTrack(-1);
+  }
+
+  loadNextTrack(): void {
+    this.setNextOrPreviousTrack(1);
+  }
+
+  setNextOrPreviousTrack(next: number): void {
+    this.setValidatedPosition(next);
+    const file = this.folders[this.currentFilePositionInArray];
+    this.setCurrentFile(file);
+  }
+
+  setValidatedPosition(next: number): void {
+    this.currentFilePositionInArray += next;
+
+    if (this.currentFilePositionInArray < 0) {
+      this.currentFilePositionInArray = this.folders.length - 1;
+    }
+    if (this.currentFilePositionInArray > this.folders.length - 1) {
+      this.currentFilePositionInArray = 0;
+    }
+  }
+
   setCurrentFile(file): void {
     this.currentFile = file;
     this.getSongData();
+    if (this.isAutoplay) {
+      this.playSong(file);
+    }
   }
 
   playSong(file): void {
