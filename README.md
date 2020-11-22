@@ -1,4 +1,6 @@
-# how to setup electon angular
+# Setup
+
+## Setup with powershell
 
 The setup is made into commands and maybe later will be explained in steps to take in text format.
 
@@ -37,6 +39,8 @@ Remove-Item -Path './src/index.css'
 
 ```
 
+## Test and build
+
 // to quick test
 
 ```powershell
@@ -71,6 +75,8 @@ npm run package
 
 ```
 
+## Don't forget
+
 TO communicate with electron
 
 ```powershell
@@ -97,6 +103,8 @@ cd to-correct-dir
 npm install
 
 ```
+
+## Beware of common mistakes
 
 beware of typescript strict
 
@@ -142,7 +150,7 @@ or just copy and replace angular into app-name folder and edit tsconfig to corre
 ```
 
 beware of
-angular.json
+`angular.json`
 
 ```json
 
@@ -162,7 +170,7 @@ angular.json
 ```
 
 beware of
-index.html
+`index.html`
 
 ```html
 <base href="./" />
@@ -171,14 +179,12 @@ index.html
 ```
 
 If you keep app-name as app-name
-beware that package.json ignore, ignores correct folder, or electron will build huge app with all node_modules and stuff not just from "dist"
+beware that `package.json` ignore, ignores correct folder, or electron will build huge app with all `node_modules` and stuff not just from `"dist"`
 
-you might want to install these
+## You might want to install these
 
 ```powershell
 
-npm install --save @angular/material
-npm install --save @angular/animations
 npm install --save @angular/material @angular/cdk @angular/animations
 npm install bootstrap --save
 
