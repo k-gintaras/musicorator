@@ -43,7 +43,7 @@ function initWindow() {
     // frame: false,
   });
   // TODO: will not be able to see console
-  appWindow.setMenu(null);
+  // appWindow.setMenu(null);
 
   appWindow.loadURL(
     format({
