@@ -1,16 +1,14 @@
-// TODO: stop chrome complaining
+// stop chrome complaining
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 // a must have
 let { app, ipcMain } = require('electron');
 
 // globals
+let canBigError = false;
 let appWindow;
 let currentEvent;
 
-// imports later...
-// fs
-// TODO: declare what will be used from imports, so they are imported JIT just in time
 // imports later...
 // electron
 let shell;
@@ -23,6 +21,10 @@ let mkdir;
 let resolve;
 let join;
 let basename;
+// id3
+let nodeId3;
+
+const requirements = {};
 
 // WINDOW
 function initWindow() {
@@ -65,13 +67,24 @@ app.on('activate', function () {
 
 // TODO: COMMAND LISTENERS
 ipcMain.on('requestFromRenderer', (event, optionsObj) => {
-  const validRequests = ['openDirectory', 'getFilesByType'];
+  const validRequests = [
+    'openDirectory',
+    'getDirectoryAllFiles',
+    'createFolder',
+    'getLastfmWebsite',
+    'getWebsite',
+    'playAudio',
+    'getFilesByType',
+    'getMusicData',
+    'setMusicData',
+    'getAllMusicData',
+    'copyAllFiles',
+  ];
   // optionsObj={
   //  anyName:any,
   //  dir:'qq'
   // }
   currentEvent = event;
-  // TODO: here angular sends key and we choose what to run in electron
   const key = optionsObj.key;
 
   //  in future allow only options.openFolder.title, so that we can easier error check
@@ -86,21 +99,75 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
     feedback('Invalid Options: ' + dir);
   }
 
-  // TODO: what to do based on what key was sent
   switch (key) {
     case 'openDirectory':
       startOpenDirectory(optionsObj);
       break;
+    case 'getDirectoryAllFiles':
+      startGetDirectoryAllFiles(optionsObj);
+      break;
+    case 'createFolder':
+      startCreateFolder(optionsObj);
+      break;
+    case 'getLastfmWebsite':
+      startGetLastfmWebsite(optionsObj);
+      break;
+    case 'getWebsite':
+      startGetWebsite(optionsObj);
+      break;
+    case 'playAudio':
+      startPlayAudio(optionsObj);
+      break;
     case 'getFilesByType':
       startGetFilesByType(optionsObj);
       break;
+    case 'getMusicData':
+      startGetMusicData(optionsObj);
+      break;
+    case 'setMusicData':
+      startSetMusicData(optionsObj);
+      break;
+    case 'getAllMusicData':
+      startGetAllMusicData(optionsObj);
+      break;
+    case 'copyAllFiles':
+      startCopyAllFiles(optionsObj);
+      break;
+
     default:
       feedback('Wrong Request: ' + key);
       break;
   }
 });
 
-// TODO: this is just to send feedback when loading, not necessary
+// TODO: useful
+// function error(s) {
+//   if (s && canBigError) {
+//     popup("Error: ", s)
+//       .then()
+//       .catch((err) => {
+//         console.log(err);
+//       });
+//   } else {
+//     console.log("Error: ", "Unknown Electron App Error!");
+//   }
+// }
+
+// function popup(titleIn, messageIn) {
+//   console.log(messageIn);
+//   const msg = JSON.stringify(messageIn);
+//   return dialog
+//     .showMessageBox(null, {
+//       type: "warning",
+//       defaultId: 2,
+//       title: titleIn,
+//       message: msg,
+//     })
+//     .catch((err) => {
+//       console.log(err);
+//     });
+// }
+
 function doRespondBack(key, response) {
   if (currentEvent) {
     currentEvent.sender.send(key, response);
@@ -138,6 +205,33 @@ function startCreateFolder(options) {
   } else {
     feedback('Missing Create Folder Data.');
   }
+}
+
+function startGetLastfmWebsite(options) {
+  // TODO: use own data
+  // Application name	music searcher
+  // API key	fe9f2adbe646d34240330df269571bb4
+  // Shared secret	202df50802f63dd74b55079f8499c232
+  // Registered to	ubaby_original
+  // let title = options.title;
+  // let artist = options.artist;
+  // var lfm = new LastfmAPI({
+  //   api_key: "fe9f2adbe646d34240330df269571bb4",
+  //   secret: "202df50802f63dd74b55079f8499c232",
+  // });
+  // lfm.track.getInfo(
+  //   {
+  //     artist: artist,
+  //     track: title,
+  //   },
+  //   (err, track) => {
+  //     if (err) {
+  //       throw err;
+  //     } else {
+  //       console.log(track);
+  //     }
+  //   }
+  // );
 }
 
 function startGetWebsite(options) {
@@ -280,6 +374,13 @@ function startCopyAllFiles(options) {
   }
 }
 
+// function isValidPath(path) {
+//   if (path) {
+//     return true;
+//   }
+//   return false;
+// }
+
 function copyFileExtra(fromWhereWithFileName, toWhereWithFileName) {
   if (!copyFile) {
     copyFile = require('fs').promises.copyFile;
@@ -296,7 +397,6 @@ function copyFileExtra(fromWhereWithFileName, toWhereWithFileName) {
 }
 
 function doOpenDir(options) {
-  // TODO: here is how each import is just in time JIT
   if (!dialog) {
     dialog = require('electron').dialog;
   }

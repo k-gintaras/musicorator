@@ -1,6 +1,6 @@
 {
   "name": "app-name",
-  "productName": "app-name",
+  "productName": "Musicorator",
   "version": "1.0.0",
   "description": "Sort music, add tags, copy all files by tags.",
   "main": "src/index.js",
@@ -50,7 +50,8 @@
     }
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.0"
+    "electron-squirrel-startup": "^1.0.0",
+    "node-id3": "^0.2.1"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.54",
