@@ -38,6 +38,9 @@ function initWindow() {
     webPreferences: {
       nodeIntegration: true,
     },
+    title: 'Musicorator',
+    transparent: true,
+    // frame: false,
   });
   // TODO: will not be able to see console
   appWindow.setMenu(null);
