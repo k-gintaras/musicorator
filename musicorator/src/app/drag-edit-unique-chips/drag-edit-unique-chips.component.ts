@@ -1,6 +1,6 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatChipInputEvent } from '@angular/material/chips';
 
 @Component({
@@ -8,11 +8,15 @@ import { MatChipInputEvent } from '@angular/material/chips';
   templateUrl: './drag-edit-unique-chips.component.html',
   styleUrls: ['./drag-edit-unique-chips.component.css'],
 })
-export class DragEditUniqueChipsComponent implements OnInit {
+export class DragEditUniqueChipsComponent implements OnInit, OnDestroy {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
   @Input() resultsArray: string[] = [];
   @Input() suggestionsArray: string[] = [];
   @Input() isHorizontal = true;
+  @Input() hasFeedback = true;
+  @Input() feedbackMessage = '';
+  isTimeoutSet = false;
+  currentTimeout;
   colors = [
     '#6e40aa',
     '#7d3faf',
@@ -69,6 +73,11 @@ export class DragEditUniqueChipsComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {}
+  ngOnDestroy(): void {
+    if (this.currentTimeout) {
+      clearTimeout(this.currentTimeout);
+    }
+  }
 
   // feedback(msg: string): void {
   //
@@ -86,6 +95,8 @@ export class DragEditUniqueChipsComponent implements OnInit {
       const unique = this.isNotIn(currentPick, this.resultsArray);
       if (unique) {
         this.resultsArray.push(currentPick);
+      } else {
+        this.feedback('Already added.');
       }
     }
   }
@@ -104,10 +115,9 @@ export class DragEditUniqueChipsComponent implements OnInit {
       if (input) {
         input.value = '';
       }
+    } else {
+      this.feedback('Already added.');
     }
-    // else {
-    //   this.feedback('Already added.');
-    // }
   }
 
   removeSuggestion(tag: string): void {
@@ -131,11 +141,9 @@ export class DragEditUniqueChipsComponent implements OnInit {
       if (input) {
         input.value = '';
       }
+    } else {
+      this.feedback('Already added.');
     }
-
-    // else {
-    //   this.feedback('Already added.');
-    // }
   }
 
   remove(tag: string): void {
@@ -149,5 +157,23 @@ export class DragEditUniqueChipsComponent implements OnInit {
   // only add if unique
   isNotIn(val: string, arr: string[]): boolean {
     return !(arr.indexOf(val) > -1);
+  }
+
+  feedback(s: string): void {
+    console.log(s);
+    if (this.hasFeedback) {
+      this.clearMessageSafely();
+    }
+    this.feedbackMessage = s;
+  }
+
+  clearMessageSafely(): void {
+    if (!this.isTimeoutSet) {
+      this.isTimeoutSet = true;
+      this.currentTimeout = setTimeout(() => {
+        this.feedbackMessage = '';
+        this.isTimeoutSet = false;
+      }, 3000);
+    }
   }
 }

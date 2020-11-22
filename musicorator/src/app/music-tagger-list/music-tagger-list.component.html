@@ -1,1 +1,61 @@
-<p>music-tagger-list works!</p>
+<div class="container-fluid">
+  <div class="menu">
+    <!-- <app-music-tagger></app-music-tagger> -->
+    <app-music-tagging
+      [currentFile]="currentFile"
+      [currentMetadataObject]="currentMetaDataObject"
+    ></app-music-tagging>
+  </div>
+  <div class="container-fluid" *ngFor="let file of folders">
+    <div class="row" [ngClass]="currentFile === file ? 'row selected' : 'row'">
+      <div
+        appAntiSpamClick
+        (debounceClick)="setCurrentFile(file)"
+        [debounceTime]="1000"
+        class="col-10 button-align clickable-text"
+      >
+        {{ getFileName(file) }}
+      </div>
+      <div class="col-2">
+        <button
+          class="mini-button"
+          mat-mini-fab
+          color="white"
+          (click)="playSong(file)"
+          aria-label="Play"
+        >
+          <mat-icon>play_arrow</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<span class="footer-feedback" style="color: grey">
+  Last action:{{ currentFeedback }}</span
+>
+
+<div class="footer">
+  <!-- <div class="checkbox">
+    <mat-checkbox [(ngModel)]="isPlayAndData">Play and Show</mat-checkbox>
+  </div> -->
+  <mat-form-field style="width: 100px">
+    <mat-label>File Type</mat-label>
+    <input matInput [(ngModel)]="fileContains" />
+  </mat-form-field>
+  <button
+    mat-fab
+    color="primary"
+    appAntiSpamClick
+    (debounceClick)="openFolder()"
+    [debounceTime]="300"
+    aria-label="Play"
+  >
+    <mat-icon>folder_open</mat-icon>
+  </button>
+  <div *ngIf="isLoading">
+    Loading...
+    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+  </div>
+</div>
+
+<div class="container-fluid" style="height: 500px"></div>

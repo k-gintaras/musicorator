@@ -1,60 +1,64 @@
-<div
-  cdkDropList
-  #suggestions="cdkDropList"
-  [cdkDropListData]="suggestionsArray"
-  [cdkDropListConnectedTo]="[results]"
-  (cdkDropListDropped)="drop($event)"
->
-  <mat-chip-list>
+<div style="position: relative">
+  <div
+    cdkDropList
+    #suggestions="cdkDropList"
+    [cdkDropListData]="suggestionsArray"
+    [cdkDropListConnectedTo]="[results]"
+    (cdkDropListDropped)="drop($event)"
+  >
+    <mat-chip-list>
+      <mat-chip
+        *ngFor="let tag of suggestionsArray; let i = index"
+        cdkDrag
+        [style]="' color:white' + ';background-color:' + colors[i]"
+        [removable]="true"
+        (removed)="removeSuggestion(tag)"
+      >
+        {{ tag }}
+        <mat-icon matChipRemove>cancel</mat-icon>
+      </mat-chip>
+      <input
+        placeholder="New Type..."
+        [matChipInputFor]="suggestions2"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        (matChipInputTokenEnd)="addSuggestion($event)"
+      />
+    </mat-chip-list>
+  </div>
+  <hr />
+  <mat-chip-list
+    class="example-chip"
+    cdkDropList
+    #results="cdkDropList"
+    [cdkDropListData]="resultsArray"
+    [cdkDropListConnectedTo]="[suggestions]"
+    (cdkDropListDropped)="drop($event)"
+  >
     <mat-chip
-      *ngFor="let tag of suggestionsArray; let i = index"
+      class="example-box"
       cdkDrag
-      [style]="' color:white' + ';background-color:' + colors[i]"
+      *ngFor="let tag of resultsArray; let i = index"
       [removable]="true"
-      (removed)="removeSuggestion(tag)"
+      (removed)="remove(tag)"
     >
       {{ tag }}
       <mat-icon matChipRemove>cancel</mat-icon>
     </mat-chip>
     <input
       placeholder="New Type..."
-      [matChipInputFor]="suggestions2"
+      [matChipInputFor]="results2"
       [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-      (matChipInputTokenEnd)="addSuggestion($event)"
+      (matChipInputTokenEnd)="add($event)"
     />
   </mat-chip-list>
-</div>
-<hr />
-<mat-chip-list
-  class="example-chip"
-  cdkDropList
-  #results="cdkDropList"
-  [cdkDropListData]="resultsArray"
-  [cdkDropListConnectedTo]="[suggestions]"
-  (cdkDropListDropped)="drop($event)"
->
-  <mat-chip
-    class="example-box"
-    cdkDrag
-    *ngFor="let tag of resultsArray; let i = index"
-    [removable]="true"
-    (removed)="remove(tag)"
-  >
-    {{ tag }}
-    <mat-icon matChipRemove>cancel</mat-icon>
-  </mat-chip>
-  <input
-    placeholder="New Type..."
-    [matChipInputFor]="results2"
-    [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-    (matChipInputTokenEnd)="add($event)"
-  />
-</mat-chip-list>
 
-<!-- to allow adding chip inside drag and drop -->
-<mat-chip-list style="display: none" #suggestions2>
-  <mat-chip> placeholder </mat-chip>
-</mat-chip-list>
-<mat-chip-list style="display: none" #results2>
-  <mat-chip> placeholder </mat-chip>
-</mat-chip-list>
+  <!-- to allow adding chip inside drag and drop -->
+  <mat-chip-list style="display: none" #suggestions2>
+    <mat-chip> placeholder </mat-chip>
+  </mat-chip-list>
+  <mat-chip-list style="display: none" #results2>
+    <mat-chip> placeholder </mat-chip>
+  </mat-chip-list>
+
+  <div class="mini-feedback">{{ feedbackMessage }}</div>
+</div>

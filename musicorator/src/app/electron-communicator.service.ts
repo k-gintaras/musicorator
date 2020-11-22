@@ -1,5 +1,8 @@
 import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { HelperService } from './helper.service';
+import { TestDataService } from './test-data.service';
+// const ipc = (window as any).require('electron').ipcRenderer;
 
 @Injectable({
   providedIn: 'root',
@@ -9,8 +12,11 @@ export class ElectronCommunicatorService {
   messages = new BehaviorSubject<string>('');
   directory = new BehaviorSubject<string>('');
 
-  // TODO: look into app component, this is not necessary to edit
-  constructor(private zone: NgZone) {
+  constructor(
+    private zone: NgZone,
+    private helper: HelperService,
+    private t: TestDataService
+  ) {
     if ((window as any).require) {
       try {
         this.ipc = (window as any).require('electron').ipcRenderer;
@@ -26,9 +32,17 @@ export class ElectronCommunicatorService {
     if (this.ipc) {
       this.sendElectron(options);
     } else {
-      this.sendAngular(options);
+      // this.sendAngular(key, options);
     }
   }
+
+  // sendToElectron(key: string, parameters: any[]): void {
+  //   if (this.ipc) {
+  //     this.sendElectron(key, parameters);
+  //   } else {
+  //     this.sendAngular(key, parameters);
+  //   }
+  // }
 
   listenToElectronConstantly(key: string): Observable<any> {
     if (this.ipc) {
@@ -38,19 +52,22 @@ export class ElectronCommunicatorService {
     }
   }
 
-  private sendElectron(options: any): void {
-    // TODO: this request is listened in electron app
+  sendElectron(options: any): void {
     this.ipc.send('requestFromRenderer', options);
   }
 
-  private sendAngular(options: any): void {
-    console.log('sending to electron: ' + options.key);
+  // sendElectron(key: string, options: {}): void {
+  //   this.ipc.send(key, options);
+  // }
+
+  sendAngular(key: string, parameters: string[]): void {
+    console.log('sending to electron: ' + key);
   }
 
-  private listenElectron(key: string): Observable<any> {
+  listenElectron(key: string): Observable<any> {
     const observable = new Observable((subscriber) => {
       try {
-        this.ipc.on(key, (event: any, arg: any) => {
+        this.ipc.on(key, (event, arg) => {
           this.zone.run(() => {
             subscriber.next(arg);
             // subscriber.complete(); if you want to stop from listening next values
@@ -65,8 +82,7 @@ export class ElectronCommunicatorService {
     return observable;
   }
 
-  private listenAngular(key: string): Observable<any> {
-    // TODO: return reasonable values when running ng serve
+  listenAngular(key: string): Observable<any> {
     const observable = new Observable((subscriber) => {
       try {
         switch (key) {
@@ -74,8 +90,15 @@ export class ElectronCommunicatorService {
             subscriber.next('C:/Users');
             break;
           case 'getFilesByType':
-            subscriber.next(['testdata', 't2']);
+            subscriber.next(this.t.getTestFolders());
             break;
+          case 'getAllMusicData':
+            subscriber.next(this.t.getTestData());
+            break;
+          case 'getMusicData':
+            subscriber.next(this.t.getTestData()[0].data);
+            break;
+
           default:
             break;
         }
@@ -88,15 +111,14 @@ export class ElectronCommunicatorService {
     return observable;
   }
 
-  getFileName(dir: string): string {
+  getFileName(dir): string {
     if (dir) {
       return dir.replace(/^.*[\\\/]/, '');
     }
     return dir;
   }
 
-  feedback(s: string): void {
-    // TODO: feedback to user
-    console.log(s);
+  feedback(s): void {
+    this.helper.feedback(s);
   }
 }

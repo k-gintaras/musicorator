@@ -1,1 +1,56 @@
-<p>music-tagging works!</p>
+<div class="container-fluid">
+  <div class="row">
+    <h2>{{ getFileName() }}</h2>
+  </div>
+  <div class="row">{{ currentFile }}</div>
+  <app-drag-edit-unique-chips
+    [suggestionsArray]="tagsSuggestion"
+    [resultsArray]="tagsArray"
+    [isHorizontal]="true"
+  ></app-drag-edit-unique-chips>
+  <div class="row">
+    <div class="mini-button">
+      <button
+        mat-mini-fab
+        color="warn"
+        appAntiSpamClick
+        (debounceClick)="saveSongData()"
+        [debounceTime]="300"
+        aria-label="Play"
+      >
+        <mat-icon>save</mat-icon>
+      </button>
+    </div>
+    <div class="mini-button">
+      <button
+        mat-mini-fab
+        color="primary"
+        appAntiSpamClick
+        (debounceClick)="showMore()"
+        [debounceTime]="300"
+        aria-label="more"
+      >
+        <mat-icon>open_in_new</mat-icon>
+      </button>
+    </div>
+
+    <div class="mini-button">
+      <button
+        mat-mini-fab
+        color="primary"
+        appAntiSpamClick
+        (debounceClick)="playSong()"
+        [debounceTime]="300"
+        aria-label="Play"
+      >
+        <mat-icon>play_arrow</mat-icon>
+      </button>
+    </div>
+    <div class="checkbox">
+      <mat-checkbox (click)="trySort()" [(ngModel)]="isSort"
+        >Auto Sort</mat-checkbox
+      >
+    </div>
+  </div>
+  <div class="row" style="color: grey">{{ currentFeedback }}</div>
+</div>

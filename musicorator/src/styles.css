@@ -8,6 +8,14 @@ body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
+
+/* has to be in relative container */
+.mini-feedback {
+  bottom: 0;
+  right: 0;
+  position: absolute;
+  color: rgb(130, 1, 1);
+}
 /*
 thanks to:
 https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/ */
