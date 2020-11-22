@@ -44,13 +44,10 @@ export class MusicTaggerListComponent implements OnInit, OnDestroy {
   @HostListener('window:keyup', ['$event'])
   keyEvent(event: KeyboardEvent): void {
     if (event.key === KEY_CODE.RIGHT_ARROW) {
-      console.log('click right');
       this.loadNextTrack();
     }
 
     if (event.key === KEY_CODE.LEFT_ARROW) {
-      console.log('click left');
-
       this.loadPreviousTrack();
     }
   }
