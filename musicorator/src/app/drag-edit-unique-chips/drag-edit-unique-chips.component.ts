@@ -86,7 +86,7 @@ export class DragEditUniqueChipsComponent
       }
     }
 
-    return 'white';
+    return 'grey';
   }
 
   ngOnInit(): void {
@@ -197,7 +197,6 @@ export class DragEditUniqueChipsComponent
   }
 
   feedback(s: string): void {
-    console.log(s);
     if (this.hasFeedback) {
       this.clearMessageSafely();
     }
