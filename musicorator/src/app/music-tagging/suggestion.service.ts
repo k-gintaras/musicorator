@@ -6,6 +6,7 @@ export class SuggestionService {
   suggestionTags = [
     'active',
     'passive',
+    'positive',
     'fast',
     'slow',
     'happy',

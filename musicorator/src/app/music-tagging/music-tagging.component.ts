@@ -7,6 +7,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { DragEditUniqueChipsService } from '../drag-edit-unique-chips/drag-edit-unique-chips.service';
 import { ElectronCommunicatorService } from '../electron-communicator.service';
 import { HelperService } from '../helper.service';
 import { PopupService } from '../popup/popup.service';
@@ -35,7 +36,7 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
   isSort;
   tagsArray;
   tagsSuggestion;
-  discretizedSuggestions;
+  currentSuggestions;
   suggestionKeys = [
     'album',
     'artist',
@@ -60,22 +61,22 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
     private communicator: ElectronCommunicatorService,
     private suggestionService: SuggestionService,
     private helper: HelperService,
-    private dialog: PopupService
+    private dialog: PopupService,
+    private chips: DragEditUniqueChipsService
   ) {}
 
   ngOnInit(): void {
     this.subscriptions = [];
     this.subscriptions.push(this.setPlaySongListener());
     this.subscriptions.push(this.setSaveSongListener());
+    // this.subscriptions.push(this.setSuggestionsListener());
     this.tagsSuggestion = this.suggestionService.getSuggestionTags();
-    this.discretizedSuggestions = this.suggestionService.getSuggestionTagsDiscretized();
     this.setProgressAndFeedback(false, '', false);
     this.setSongDetails(this.currentMetadataObject);
   }
 
   ngOnChanges(): void {
     this.tagsSuggestion = this.suggestionService.getSuggestionTags();
-    this.discretizedSuggestions = this.suggestionService.getSuggestionTagsDiscretized();
 
     this.setProgressAndFeedback(false, '', false);
     this.setSongDetails(this.currentMetadataObject);
@@ -118,6 +119,12 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
         this.setProgressAndFeedback(false, 'Played Audio.', false);
       });
   }
+
+  // setSuggestionsListener(): Subscription {
+  //   return this.chips.getSuggestionsObservable().subscribe((result) => {
+  //     this.tagsSuggestion = this.suggestionService.setSuggestionTags(result);
+  //   });
+  // }
 
   setSaveSongListener(): Subscription {
     return this.communicator
@@ -163,7 +170,7 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
     const trimmed = this.helper.getTrimmedArray(uniques);
     const lowered = this.helper.getLowerCaseArray(trimmed);
 
-    this.tagsSuggestion = this.tagsSuggestion.concat(lowered);
+    this.currentSuggestions = this.tagsSuggestion.concat(lowered);
   }
 
   setTagsArray(result: any): void {

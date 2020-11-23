@@ -2,6 +2,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { MatChipInputEvent } from '@angular/material/chips';
+import { DragEditUniqueChipsService } from './drag-edit-unique-chips.service';
 
 @Component({
   selector: 'app-drag-edit-unique-chips',
@@ -73,7 +74,7 @@ export class DragEditUniqueChipsComponent
     '#6947b7',
   ];
 
-  constructor() {}
+  constructor(private service: DragEditUniqueChipsService) {}
 
   getColorForArrayItem(str: string): string {
     const i = this.getArrPosition(str, this.suggestionsArray);
@@ -126,7 +127,7 @@ export class DragEditUniqueChipsComponent
       // } else {
       //   this.feedback('Already added.');
       // }
-      this.tryAddValidated(null, currentPick, this.resultsArray);
+      this.tryAddValidated(null, currentPick, this.resultsArray, false);
     }
   }
 
@@ -134,7 +135,7 @@ export class DragEditUniqueChipsComponent
     const input = event.input;
     const value = event.value;
 
-    this.tryAddValidated(input, value, this.suggestionsArray);
+    this.tryAddValidated(input, value, this.suggestionsArray, true);
   }
 
   sortArrayByLength(arr: string[]): void {
@@ -145,7 +146,7 @@ export class DragEditUniqueChipsComponent
     });
   }
 
-  tryAddValidated(input, value, arr): void {
+  tryAddValidated(input, value, arr, isSuggestions): void {
     const unique = this.isNotIn(value, arr);
 
     if (unique) {
@@ -163,6 +164,12 @@ export class DragEditUniqueChipsComponent
     if (this.isAutoSort) {
       this.sortArrayByLength(this.resultsArray);
     }
+
+    if (isSuggestions) {
+      this.service.setSuggestions(arr);
+    } else {
+      this.service.setResults(arr);
+    }
   }
 
   removeSuggestion(tag: string): void {
@@ -170,13 +177,14 @@ export class DragEditUniqueChipsComponent
 
     if (index >= 0) {
       this.suggestionsArray.splice(index, 1);
+      this.service.setSuggestions(this.suggestionsArray);
     }
   }
 
   add(event: MatChipInputEvent): void {
     const input = event.input;
     const value = event.value;
-    this.tryAddValidated(input, value, this.resultsArray);
+    this.tryAddValidated(input, value, this.resultsArray, false);
   }
 
   remove(tag: string): void {
@@ -184,6 +192,7 @@ export class DragEditUniqueChipsComponent
 
     if (index >= 0) {
       this.resultsArray.splice(index, 1);
+      this.service.setResults(this.resultsArray);
     }
   }
 
