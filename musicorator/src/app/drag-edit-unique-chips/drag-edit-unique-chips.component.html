@@ -1,4 +1,4 @@
-<div style="position: relative">
+<div *ngIf="isAddOnClick" style="position: relative">
   <div
     cdkDropList
     #suggestions="cdkDropList"
@@ -10,7 +10,8 @@
       <mat-chip
         *ngFor="let tag of suggestionsArray; let i = index"
         cdkDrag
-        [style]="' color:white' + ';background-color:' + colors[i]"
+        style="color: white"
+        [ngStyle]="{ 'background-color': getColorForArrayItem(tag) }"
         [removable]="true"
         (removed)="removeSuggestion(tag)"
       >
@@ -38,6 +39,8 @@
       class="example-box"
       cdkDrag
       *ngFor="let tag of resultsArray; let i = index"
+      style="color: white"
+      [ngStyle]="{ 'background-color': getColorForArrayItem(tag) }"
       [removable]="true"
       (removed)="remove(tag)"
     >
@@ -60,5 +63,32 @@
     <mat-chip> placeholder </mat-chip>
   </mat-chip-list>
 
+  <div class="mini-feedback">{{ feedbackMessage }}</div>
+</div>
+
+<div *ngIf="!isAddOnClick" style="position: relative">
+  <div>
+    <mat-chip-list>
+      <mat-chip
+        (click)="tryAddValidated(null, tag, resultsArray)"
+        *ngFor="let tag of suggestionsArray; let i = index"
+        style="color: white"
+        [ngStyle]="{ 'background-color': getColorForArrayItem(tag) }"
+      >
+        {{ tag }}
+      </mat-chip>
+    </mat-chip-list>
+  </div>
+  <hr />
+  <mat-chip-list>
+    <mat-chip
+      (click)="remove(tag)"
+      *ngFor="let tag of resultsArray; let i = index"
+      style="color: white"
+      [ngStyle]="{ 'background-color': getColorForArrayItem(tag) }"
+    >
+      {{ tag }}
+    </mat-chip>
+  </mat-chip-list>
   <div class="mini-feedback">{{ feedbackMessage }}</div>
 </div>

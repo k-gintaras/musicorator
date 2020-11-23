@@ -39,7 +39,7 @@ function initWindow() {
       nodeIntegration: true,
     },
     title: 'Musicorator',
-    transparent: true,
+    // transparent: true,
     // frame: false,
   });
   // TODO: will not be able to see console

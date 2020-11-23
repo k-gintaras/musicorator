@@ -46,6 +46,7 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
   ];
 
   isSaveOnEnter = true;
+  isAddOnClick = false;
   @HostListener('window:keyup', ['$event'])
   keyEvent(event: KeyboardEvent): void {
     if (event.key === KEY_CODE.ENTER) {
@@ -176,7 +177,6 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
       }
     }
     this.tagsArray = tags;
-    this.trySort();
   }
 
   getCommentAsArray(comment: string): string[] {
@@ -234,11 +234,5 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
       this.helper.feedback(JSON.stringify(s));
     }
     this.currentFeedback = s;
-  }
-
-  trySort(): void {
-    if (this.isSort) {
-      this.helper.sortArrayByLength(this.tagsArray);
-    }
   }
 }

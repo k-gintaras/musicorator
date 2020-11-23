@@ -7,6 +7,8 @@
     [suggestionsArray]="tagsSuggestion"
     [resultsArray]="tagsArray"
     [isHorizontal]="true"
+    [isAddOnClick]="isAddOnClick"
+    [isAutoSort]="isSort"
   ></app-drag-edit-unique-chips>
   <div class="row">
     <div class="mini-button">
@@ -47,12 +49,13 @@
       </button>
     </div>
     <div class="checkbox">
-      <mat-checkbox (click)="trySort()" [(ngModel)]="isSort"
-        >Auto Sort</mat-checkbox
-      >
+      <mat-checkbox [(ngModel)]="isSort">Auto Sort</mat-checkbox>
     </div>
     <div class="checkbox">
       <mat-checkbox [(ngModel)]="isSaveOnEnter">Save On Enter</mat-checkbox>
+    </div>
+    <div class="checkbox">
+      <mat-checkbox [(ngModel)]="isAddOnClick">Drag Add Remove</mat-checkbox>
     </div>
   </div>
   <div class="row" style="color: grey">{{ currentFeedback }}</div>

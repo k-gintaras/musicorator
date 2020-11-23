@@ -1,6 +1,6 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { MatChipInputEvent } from '@angular/material/chips';
 
 @Component({
@@ -8,12 +8,15 @@ import { MatChipInputEvent } from '@angular/material/chips';
   templateUrl: './drag-edit-unique-chips.component.html',
   styleUrls: ['./drag-edit-unique-chips.component.css'],
 })
-export class DragEditUniqueChipsComponent implements OnInit, OnDestroy {
+export class DragEditUniqueChipsComponent
+  implements OnInit, OnDestroy, OnChanges {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
   @Input() resultsArray: string[] = [];
   @Input() suggestionsArray: string[] = [];
   @Input() isHorizontal = true;
   @Input() hasFeedback = true;
+  @Input() isAddOnClick = true;
+  @Input() isAutoSort = false;
   @Input() feedbackMessage = '';
   isTimeoutSet = false;
   currentTimeout;
@@ -72,7 +75,32 @@ export class DragEditUniqueChipsComponent implements OnInit, OnDestroy {
 
   constructor() {}
 
-  ngOnInit(): void {}
+  getColorForArrayItem(str: string): string {
+    const i = this.getArrPosition(str, this.suggestionsArray);
+
+    // exists
+    if (i > -1) {
+      // we have enough colors
+      if (i < this.colors.length) {
+        return this.colors[i];
+      }
+    }
+
+    return 'white';
+  }
+
+  ngOnInit(): void {
+    if (this.isAutoSort) {
+      this.sortArrayByLength(this.resultsArray);
+    }
+  }
+
+  ngOnChanges(): void {
+    if (this.isAutoSort) {
+      this.sortArrayByLength(this.resultsArray);
+    }
+  }
+
   ngOnDestroy(): void {
     if (this.currentTimeout) {
       clearTimeout(this.currentTimeout);
@@ -92,12 +120,13 @@ export class DragEditUniqueChipsComponent implements OnInit, OnDestroy {
     } else {
       const currentPick = event.previousContainer.data[event.previousIndex];
       // copy if unique
-      const unique = this.isNotIn(currentPick, this.resultsArray);
-      if (unique) {
-        this.resultsArray.push(currentPick);
-      } else {
-        this.feedback('Already added.');
-      }
+      // const unique = this.isNotIn(currentPick, this.resultsArray);
+      // if (unique) {
+      //   this.resultsArray.push(currentPick);
+      // } else {
+      //   this.feedback('Already added.');
+      // }
+      this.tryAddValidated(null, currentPick, this.resultsArray);
     }
   }
 
@@ -105,11 +134,23 @@ export class DragEditUniqueChipsComponent implements OnInit, OnDestroy {
     const input = event.input;
     const value = event.value;
 
-    const unique = this.isNotIn(value, this.suggestionsArray);
+    this.tryAddValidated(input, value, this.suggestionsArray);
+  }
+
+  sortArrayByLength(arr: string[]): void {
+    arr.sort((a, b) => {
+      // ASC  -> a.length - b.length
+      // DESC -> b.length - a.length
+      return a.length - b.length;
+    });
+  }
+
+  tryAddValidated(input, value, arr): void {
+    const unique = this.isNotIn(value, arr);
 
     if (unique) {
       if ((value || '').trim()) {
-        this.suggestionsArray.push(value.trim().toLowerCase());
+        arr.push(value.trim().toLowerCase());
       }
 
       if (input) {
@@ -117,6 +158,10 @@ export class DragEditUniqueChipsComponent implements OnInit, OnDestroy {
       }
     } else {
       this.feedback('Already added.');
+    }
+
+    if (this.isAutoSort) {
+      this.sortArrayByLength(this.resultsArray);
     }
   }
 
@@ -131,19 +176,7 @@ export class DragEditUniqueChipsComponent implements OnInit, OnDestroy {
   add(event: MatChipInputEvent): void {
     const input = event.input;
     const value = event.value;
-    const unique = this.isNotIn(value, this.resultsArray);
-
-    if (unique) {
-      if ((value || '').trim()) {
-        this.resultsArray.push(value.trim().toLowerCase());
-      }
-
-      if (input) {
-        input.value = '';
-      }
-    } else {
-      this.feedback('Already added.');
-    }
+    this.tryAddValidated(input, value, this.resultsArray);
   }
 
   remove(tag: string): void {
@@ -157,6 +190,10 @@ export class DragEditUniqueChipsComponent implements OnInit, OnDestroy {
   // only add if unique
   isNotIn(val: string, arr: string[]): boolean {
     return !(arr.indexOf(val) > -1);
+  }
+
+  getArrPosition(val: string, arr: string[]): number {
+    return arr.indexOf(val);
   }
 
   feedback(s: string): void {

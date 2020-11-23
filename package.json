@@ -22,7 +22,8 @@
     "forge": {
       "packagerConfig": {
         "ignore": [
-          "/musicorator"
+          "/musicorator",
+          "/out"
         ]
       },
       "makers": [
