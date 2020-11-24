@@ -2,7 +2,6 @@ import {
   Component,
   HostListener,
   Input,
-  OnChanges,
   OnDestroy,
   OnInit,
 } from '@angular/core';
@@ -14,9 +13,10 @@ import { HelperService } from '../helper.service';
 export enum KEY_CODE {
   RIGHT_ARROW = 'ArrowRight',
   LEFT_ARROW = 'ArrowLeft',
+  ENTER = 'Enter',
 }
 
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { COMMA, SPACE } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-tagging-from-file',
@@ -24,7 +24,7 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes';
   styleUrls: ['./tagging-from-file.component.css'],
 })
 export class TaggingFromFileComponent implements OnInit, OnDestroy {
-  readonly separatorKeysCodes: number[] = [ENTER, COMMA];
+  readonly separatorKeysCodes: number[] = [SPACE, COMMA];
 
   // feedback
   isLoading;
@@ -75,6 +75,52 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
     if (event.key === KEY_CODE.LEFT_ARROW) {
       this.loadPreviousTrack();
     }
+    if (event.key === KEY_CODE.ENTER) {
+      if (this.isSaveOnEnter) {
+        this.saveSongData();
+      }
+    }
+  }
+
+  saveSongData(): void {
+    const tags = this.getTagsFormatted();
+    const options = {
+      key: 'setMusicData',
+      dir: this.currentFile,
+      tagsObject: tags,
+    };
+    if (this.currentFile && tags) {
+      this.setProgressAndFeedback(true, 'Saving Audio Data...', true);
+      this.communicator.sendToElectron(options);
+    } else {
+      this.feedback('Not saving empty.', true);
+    }
+  }
+
+  getTagsFormatted(): any {
+    if (this.resultsArray) {
+      if (this.resultsArray.length) {
+        const trimedArr = this.resultsArray.map((str) =>
+          str.trim().toLowerCase()
+        );
+        const tagString = trimedArr.join(',');
+
+        const updatedComment = {
+          language: 'eng',
+          shortText: '',
+          text: tagString,
+        };
+
+        // library requires top object // I didn't realize and ruined some files :D
+        // update just edits tags added, write overwrites and deletes the rest
+        const tags = {
+          COMM: updatedComment,
+          comment: updatedComment,
+        };
+        return tags;
+      }
+    }
+    return '';
   }
 
   addCustom(event: MatChipInputEvent): void {
@@ -100,6 +146,15 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
     this.subscriptions.push(this.setPlaySongListener());
     this.subscriptions.push(this.setGetSongListener());
     this.subscriptions.push(this.setGetSettingsListener());
+    this.subscriptions.push(this.setSaveSongListener());
+  }
+
+  setSaveSongListener(): Subscription {
+    return this.communicator
+      .listenToElectronConstantly('setMusicData')
+      .subscribe((result) => {
+        this.setProgressAndFeedback(false, 'Saved Audio.', true);
+      });
   }
 
   loadSettings(): void {
