@@ -9,6 +9,10 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
+.tight-row {
+  border-bottom: 1px solid lightgrey;
+  margin-bottom: 3px;
+}
 /* has to be in relative container */
 .mini-feedback {
   bottom: 0;

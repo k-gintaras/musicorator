@@ -1,16 +1,3 @@
-<!-- <input [(ngModel)]="folder" placeholder="folder/to/open" />
-<button mat-raised-button color="primary" (click)="getFiles()">
-  Show Txt Files
-</button>
-<div *ngFor="let file of files">
-  <div>{{ file }}</div>
-</div>
-
-<app-drag-edit-unique-chips
-  [suggestionsArray]="files"
-  [resultsArray]="files"
-></app-drag-edit-unique-chips> -->
-
 <nav class="navbar navbar-dark bg-dark">
   <div class="navbar-brand">Musicorizer</div>
   <ul class="nav">
@@ -25,7 +12,7 @@
     <li class="nav-item">
       <a
         class="nav-link"
-        routerLink="/music-tagger"
+        routerLink="/music-tagger-file"
         [routerLinkActive]="['nav-active']"
         >Tagger</a
       >

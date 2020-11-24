@@ -4,7 +4,7 @@
   </div>
   <div class="row">{{ currentFile }}</div>
   <app-drag-edit-unique-chips
-    [suggestionsArray]="currentSuggestions"
+    [(suggestionsArray)]="currentSuggestions"
     [resultsArray]="tagsArray"
     [isHorizontal]="true"
     [isAddOnClick]="isAddOnClick"

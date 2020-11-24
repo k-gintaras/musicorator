@@ -7,7 +7,6 @@ import {
   OnInit,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { DragEditUniqueChipsService } from '../drag-edit-unique-chips/drag-edit-unique-chips.service';
 import { ElectronCommunicatorService } from '../electron-communicator.service';
 import { HelperService } from '../helper.service';
 import { PopupService } from '../popup/popup.service';
@@ -61,14 +60,15 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
     private communicator: ElectronCommunicatorService,
     private suggestionService: SuggestionService,
     private helper: HelperService,
-    private dialog: PopupService,
-    private chips: DragEditUniqueChipsService
+    private dialog: PopupService
   ) {}
 
   ngOnInit(): void {
+    // this.loadSettings();
     this.subscriptions = [];
     this.subscriptions.push(this.setPlaySongListener());
     this.subscriptions.push(this.setSaveSongListener());
+    // this.subscriptions.push(this.setGetSettingsListener());
     // this.subscriptions.push(this.setSuggestionsListener());
     this.tagsSuggestion = this.suggestionService.getSuggestionTags();
     this.setProgressAndFeedback(false, '', false);
@@ -86,6 +86,14 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
     for (const subscription of this.subscriptions) {
       subscription.unsubscribe();
     }
+  }
+
+  loadSettings(): void {
+    const options = {
+      key: 'getSettings',
+    };
+    this.setProgressAndFeedback(true, 'Getting Settings...', false);
+    this.communicator.sendToElectron(options);
   }
 
   playSong(): void {
@@ -117,6 +125,14 @@ export class MusicTaggingComponent implements OnInit, OnDestroy, OnChanges {
       .listenToElectronConstantly('playAudio')
       .subscribe((result) => {
         this.setProgressAndFeedback(false, 'Played Audio.', false);
+      });
+  }
+
+  setGetSettingsListener(): Subscription {
+    return this.communicator
+      .listenToElectronConstantly('getSettings')
+      .subscribe((result) => {
+        this.setProgressAndFeedback(false, 'Got Settings.', false);
       });
   }
 

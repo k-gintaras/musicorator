@@ -2,7 +2,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { DragEditUniqueChipsService } from './drag-edit-unique-chips.service';
+import { SuggestionService } from '../music-tagging/suggestion.service';
 
 @Component({
   selector: 'app-drag-edit-unique-chips',
@@ -74,7 +74,7 @@ export class DragEditUniqueChipsComponent
     '#6947b7',
   ];
 
-  constructor(private service: DragEditUniqueChipsService) {}
+  constructor(private suggestionService: SuggestionService) {}
 
   getColorForArrayItem(str: string): string {
     const i = this.getArrPosition(str, this.suggestionsArray);
@@ -136,6 +136,7 @@ export class DragEditUniqueChipsComponent
     const value = event.value;
 
     this.tryAddValidated(input, value, this.suggestionsArray, true);
+    this.suggestionService.setSuggestionTagsAdd(value);
   }
 
   sortArrayByLength(arr: string[]): void {
@@ -164,12 +165,6 @@ export class DragEditUniqueChipsComponent
     if (this.isAutoSort) {
       this.sortArrayByLength(this.resultsArray);
     }
-
-    if (isSuggestions) {
-      this.service.setSuggestions(arr);
-    } else {
-      this.service.setResults(arr);
-    }
   }
 
   removeSuggestion(tag: string): void {
@@ -177,7 +172,7 @@ export class DragEditUniqueChipsComponent
 
     if (index >= 0) {
       this.suggestionsArray.splice(index, 1);
-      this.service.setSuggestions(this.suggestionsArray);
+      this.suggestionService.setSuggestionTagsRemove(tag);
     }
   }
 
@@ -192,7 +187,6 @@ export class DragEditUniqueChipsComponent
 
     if (index >= 0) {
       this.resultsArray.splice(index, 1);
-      this.service.setResults(this.resultsArray);
     }
   }
 

@@ -33,6 +33,7 @@ import { PopupComponent } from './popup/popup.component';
 import { PrettyCodeComponent } from './pretty-code/pretty-code.component';
 import { SortableSearchableTableComponent } from './sortable-searchable-table/sortable-searchable-table.component';
 import { AntiSpamClickDirective } from './anti-spam-click.directive';
+import { TaggingFromFileComponent } from './tagging-from-file/tagging-from-file.component';
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import { AntiSpamClickDirective } from './anti-spam-click.directive';
     PrettyCodeComponent,
     SortableSearchableTableComponent,
     AntiSpamClickDirective,
+    TaggingFromFileComponent,
   ],
   imports: [
     BrowserModule,

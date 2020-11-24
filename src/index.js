@@ -13,10 +13,13 @@ let currentEvent;
 // electron
 let shell;
 let dialog;
+let remote;
 // fs
 let readdir;
 let copyFile;
 let mkdir;
+let readFile;
+let writeFile;
 // path
 let resolve;
 let join;
@@ -24,7 +27,54 @@ let basename;
 // id3
 let nodeId3;
 
-const requirements = {};
+// other
+const settingsFileName = 'user-settings.json';
+
+const suggestions = {
+  tags: {
+    weird: { color: '#6e40aa', group: 'funk', i: 0 },
+    funky: { color: '#7d3faf', group: 'funk', i: 1 },
+    cool: { color: '#8e3eb2', group: 'funk', i: 2 },
+    cute: { color: '#9e3db3', group: 'funk', i: 3 },
+    epic: { color: '#af3cb2', group: 'funk', i: 4 },
+    fast: { color: '#bf3caf', group: 'speed', i: 5 },
+    slow: { color: '#cf3da9', group: 'speed', i: 6 },
+    chill: { color: '#dd3fa2', group: 'speed', i: 7 },
+    progressive: { color: '#ea4299', group: 'speed', i: 8 },
+    house: { color: '#f5468e', group: 'speed', i: 9 },
+    dnb: { color: '#fe4b83', group: 'speed', i: 10 },
+    electro: { color: '#ff5276', group: 'vocals', i: 11 },
+    pop: { color: '#ff5a6a', group: 'vocals', i: 12 },
+    vocal: { color: '#ff635d', group: 'vocals', i: 13 },
+    male: { color: '#ff6d51', group: 'vocals', i: 14 },
+    female: { color: '#ff7847', group: 'vocals', i: 15 },
+    robo: { color: '#ff833d', group: 'vocals', i: 16 },
+    uplifting: { color: '#ff9036', group: 'mood', i: 17 },
+    happy: { color: '#f69d31', group: 'mood', i: 18 },
+    positive: { color: '#edaa2e', group: 'mood', i: 19 },
+    neutral: { color: '#d7c432', group: 'mood', i: 20 },
+    passive: { color: '#ccd038', group: 'mood', i: 21 },
+    sad: { color: '#c1dc41', group: 'mood', i: 22 },
+    modern: { color: '#b7e64c', group: 'age', i: 23 },
+    new: { color: '#aff05b', group: 'age', i: 24 },
+    old: { color: '#9cf357', group: 'age', i: 25 },
+    classy: { color: '#88f557', group: 'age', i: 26 },
+    classical: { color: '#75f65a', group: 'age', i: 27 },
+    electronic: { color: '#63f75f', group: 'instruments', i: 28 },
+    intrumental: { color: '#52f667', group: 'instruments', i: 29 },
+    mix: { color: '#43f471', group: 'instruments', i: 30 },
+    heavy: { color: '#36f17c', group: 'instruments', i: 31 },
+    light: { color: '#2bec89', group: 'instruments', i: 32 },
+    rhythmic: { color: '#23e696', group: 'melody', i: 33 },
+    melodic: { color: '#1ddfa3', group: 'melody', i: 34 },
+    dance: { color: '#1ad6b0', group: 'melody', i: 35 },
+    loud: { color: '#19cdbc', group: 'volume', i: 36 },
+    quiet: { color: '#1bc2c7', group: 'volume', i: 37 },
+    deep: { color: '#1eb7d1', group: 'volume', i: 38 },
+    low: { color: '#23abd8', group: 'volume', i: 39 },
+    high: { color: '#2a9fde', group: 'volume', i: 40 },
+  },
+};
 
 // WINDOW
 function initWindow() {
@@ -52,6 +102,8 @@ function initWindow() {
       slashes: true,
     })
   );
+
+  setupSettingFile();
 }
 
 app.on('ready', initWindow);
@@ -94,7 +146,7 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
   if (optionsObj) {
     if (optionsObj.dir) {
       const dir = optionsObj.dir;
-      if (dir) {
+      if (!dir) {
         feedback('Invalid Path: ' + dir);
       }
     }
@@ -135,6 +187,9 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
       break;
     case 'copyAllFiles':
       startCopyAllFiles(optionsObj);
+      break;
+    case 'getSettings':
+      startGetSettings(optionsObj);
       break;
 
     default:
@@ -462,6 +517,108 @@ function getMusicData(dir) {
   return nodeId3.read(dir, {
     exclude: ['private', 'PRIV', 'image', 'APIC'],
   });
+}
+
+function getCurrentFolder() {
+  if (!remote) {
+    remote = require('electron').app;
+  }
+  return remote.getAppPath();
+}
+
+function doGetFile(dir) {
+  getFile(dir)
+    .then((res) => {
+      doRespondBack('readFile', res);
+    })
+    .catch((res) => {
+      feedback(res);
+    });
+}
+
+function getFile(dir) {
+  if (!readFile) {
+    readFile = require('fs').promises.readFile;
+  }
+
+  return readFile(dir, 'utf8'); // TODO: allow different encoding
+}
+
+function doSaveFile(dir, data) {
+  saveFile(dir, data)
+    .then((res) => {
+      doRespondBack('writeFile', res);
+    })
+    .catch((res) => {
+      feedback(res);
+    });
+}
+
+async function setupSettingFile() {
+  const currentFolder = getCurrentFolder();
+  const dir = getJoinedPath(currentFolder, settingsFileName);
+  const file = await getFile(dir).catch((err) => {
+    if (err) {
+      // doesnt exist
+      saveFile(dir, JSON.stringify(suggestions)).catch((err) => {
+        if (err) {
+          console.log('Can`t save settings. ' + err);
+        }
+      });
+    }
+  });
+}
+
+function startGetSettings() {
+  getSettingsFile()
+    .then((res) => {
+      doRespondBack('getSettings', JSON.parse(res));
+    })
+    .catch((err) => {
+      if (err) {
+        feedback(err);
+      }
+    });
+}
+
+function startSaveSettings(data) {
+  getSettingsFile(data)
+    .then((res) => {
+      doRespondBack('saveSettings', res);
+    })
+    .catch((err) => {
+      if (err) {
+        feedback(err);
+      }
+    });
+}
+
+function getSettingsFile() {
+  const currentFolder = getCurrentFolder();
+  const dir = getJoinedPath(currentFolder, settingsFileName);
+  return getFile(dir).catch((err) => {
+    if (err) {
+      feedback(err);
+    }
+  });
+}
+
+function saveSettingsFile(data) {
+  const currentFolder = getCurrentFolder();
+  const dir = getJoinedPath(currentFolder, settingsFileName);
+  return saveFile(dir, data).catch((err) => {
+    if (err) {
+      feedback(err);
+    }
+  });
+}
+
+function saveFile(dir, data) {
+  if (!writeFile) {
+    writeFile = require('fs').promises.writeFile;
+  }
+
+  return writeFile(dir, data);
 }
 
 function getMusicDataExtra(dir) {
