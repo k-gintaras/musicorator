@@ -13,6 +13,7 @@ body {
   border-bottom: 1px solid lightgrey;
   margin-bottom: 3px;
 }
+
 /* has to be in relative container */
 .mini-feedback {
   bottom: 0;
@@ -73,7 +74,8 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   position: -webkit-sticky;
   top: 0px;
   z-index: 100;
-  background-color: rgba(252, 252, 252, 0.9);
+  background-color: rgba(201, 201, 201, 0.9);
+  border-radius: 5px;
 }
 
 .nav-active {
@@ -104,6 +106,19 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   position: fixed;
   bottom: 0px;
   padding: 5px;
+}
+
+*.unselectable {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+
+  /*
+     Introduced in Internet Explorer 10.
+     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+   */
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .mini-button {
@@ -139,4 +154,21 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   border-radius: 4px;
   cursor: pointer;
   border: 1px solid lightgrey;
+}
+
+.drag-box {
+  border: 1px solid grey;
+  border-radius: 20px;
+  margin: 1px;
+  color: white;
+  background-color: grey;
+  text-align: center;
+  padding: 2px;
+}
+
+.drag-container {
+  border: 1px solid grey;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 3px;
 }

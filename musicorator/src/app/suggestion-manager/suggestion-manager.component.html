@@ -1,0 +1,176 @@
+<div class="container-fluid">
+  <div class="row">
+    <mat-tab-group class="container-fluid" [@.disabled]="true">
+      <mat-tab label="Manage Groups">
+        <div style="padding: 25px">
+          <div class="row"><h2>Groups</h2></div>
+          <div class="row">
+            <div
+              cdkDropList
+              #suggestionsList="cdkDropList"
+              [cdkDropListData]="groups"
+              [cdkDropListConnectedTo]="[binList]"
+              class="drag-container"
+              (cdkDropListDropped)="dropGroup($event)"
+            >
+              <div
+                class="drag-box"
+                *ngFor="let item of groups; let i = index"
+                cdkDrag
+                [ngStyle]="{ 'background-color': 'grey' }"
+              >
+                {{ item }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+      <mat-tab label="Manage Suggestions">
+        <div style="padding: 25px">
+          <div class="row"><h2>Suggestions</h2></div>
+          <div class="row">
+            <div style="margin: 25px">
+              <mat-form-field>
+                <mat-label>Group</mat-label>
+                <input matInput [(ngModel)]="currentGroupName" />
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input matInput [(ngModel)]="currentName" />
+              </mat-form-field>
+              <button color="primary" mat-mini-fab (click)="addTag()">
+                <mat-icon>add</mat-icon>
+              </button>
+              <button color="primary" mat-mini-fab (click)="groupGroups()">
+                <mat-icon>sort</mat-icon>
+              </button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-3">
+              <h2>Groups</h2>
+              <div
+                cdkDropList
+                #suggestionsList2="cdkDropList"
+                [cdkDropListConnectedTo]="[binList]"
+                [cdkDropListData]="suggestionsAsArray"
+                class="drag-container"
+                (cdkDropListDropped)="drop($event)"
+              >
+                <div
+                  class="drag-box"
+                  *ngFor="let item of suggestionsAsArray; let i = index"
+                  cdkDrag
+                  [ngStyle]="{ 'background-color': bigMatrix.colors[i] }"
+                >
+                  {{ item.group }}
+                </div>
+                <div style="visibility: hidden; height: 20px">
+                  Placeholder if Empty
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <h2>Names</h2>
+              <div
+                cdkDropList
+                #suggestionsList1="cdkDropList"
+                [cdkDropListData]="suggestionsAsArray"
+                class="drag-container"
+                [cdkDropListConnectedTo]="[binList]"
+                (cdkDropListDropped)="drop($event)"
+              >
+                <div
+                  class="drag-box"
+                  *ngFor="let item of suggestionsAsArray; let i = index"
+                  cdkDrag
+                  [ngStyle]="{ 'background-color': bigMatrix.colors[i] }"
+                >
+                  {{ item.name }}
+                </div>
+                <div style="visibility: hidden; height: 20px">
+                  Placeholder if Empty
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <h2>Bin</h2>
+              <div
+                cdkDropList
+                #binList="cdkDropList"
+                [cdkDropListConnectedTo]="[suggestionsList1]"
+                [cdkDropListData]="suggestionsBin"
+                class="drag-container"
+                (cdkDropListDropped)="drop($event)"
+              >
+                <div
+                  class="drag-box"
+                  *ngFor="let item of suggestionsBin"
+                  cdkDrag
+                  [ngStyle]="{ 'background-color': item.color }"
+                >
+                  {{ item.name }}
+                </div>
+                <div style="visibility: hidden; height: 20px">
+                  Placeholder if Empty
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+      <mat-tab label="Manage Colors">
+        <div style="padding: 25px">
+          <div class="row"><h2>Suggestions</h2></div>
+          <div class="row">
+            <div style="margin: 10px">
+              <mat-form-field>
+                <mat-label>Color Array String</mat-label>
+                <input matInput [(ngModel)]="currentColorArrayString" />
+              </mat-form-field>
+              <button mat-mini-fab color="primary" (click)="setNewColors()">
+                <mat-icon>save</mat-icon>
+              </button>
+              <button mat-raised-button (click)="setDefaultColors()">
+                Set Default Colors
+              </button>
+            </div>
+          </div>
+          <div class="col-3">
+            <h2>Colors</h2>
+            <div
+              cdkDropList
+              #suggestionsList="cdkDropList"
+              [cdkDropListData]="bigMatrix.colors"
+              class="example-list"
+              (cdkDropListDropped)="drop($event)"
+            >
+              <div
+                class="drag-box"
+                *ngFor="let item of bigMatrix.colors; let i = index"
+                cdkDrag
+                [ngStyle]="{ 'background-color': bigMatrix.colors[i] }"
+              >
+                {{ item }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>
+
+<span class="footer-feedback" style="color: grey">
+  Last action: {{ currentFeedback }}</span
+>
+
+<div class="footer">
+  <button mat-fab color="primary" (click)="saveSettings()">
+    <mat-icon>save</mat-icon>
+  </button>
+  <div *ngIf="isLoading">
+    Loading...
+    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+  </div>
+</div>

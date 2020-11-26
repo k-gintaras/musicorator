@@ -16,7 +16,7 @@ export enum KEY_CODE {
   ENTER = 'Enter',
 }
 
-import { COMMA, SPACE } from '@angular/cdk/keycodes';
+// import { COMMA, SPACE } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-tagging-from-file',
@@ -24,7 +24,7 @@ import { COMMA, SPACE } from '@angular/cdk/keycodes';
   styleUrls: ['./tagging-from-file.component.css'],
 })
 export class TaggingFromFileComponent implements OnInit, OnDestroy {
-  readonly separatorKeysCodes: number[] = [SPACE, COMMA];
+  // readonly separatorKeysCodes: number[] = [SPACE, COMMA];
 
   // feedback
   isLoading;
@@ -53,9 +53,11 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
   resultsArray = [];
   isAutoSort;
   isSaveOnEnter = true;
+  isNextOnSelect = false;
 
   songSuggestions = [];
   custom = [];
+  filesAndTags = {};
 
   suggestionKeys = [
     'album',
@@ -82,8 +84,21 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
     }
   }
 
+  getFileData(file: string): string {
+    const name = this.getFileName(file);
+    if (this.filesAndTags) {
+      if (this.filesAndTags[name]) {
+        return this.filesAndTags[name];
+      }
+    }
+    return '';
+  }
+
   saveSongData(): void {
     const tags = this.getTagsFormatted();
+    this.filesAndTags[
+      this.getFileName(this.currentFile)
+    ] = this.resultsArray.slice();
     const options = {
       key: 'setMusicData',
       dir: this.currentFile,
@@ -215,6 +230,9 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
     if (result) {
       this.setSuggestionsFromTrack(result);
       this.setTagsArray(result);
+      this.filesAndTags[
+        this.getFileName(this.currentFile)
+      ] = this.resultsArray.slice();
     } else {
       this.feedback('No Audio Metadata.', false);
     }
@@ -306,6 +324,10 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
   // only add if unique
   isNotIn(val: string, arr: string[]): boolean {
     return !(arr.indexOf(val) > -1);
+  }
+
+  isThisTagSelected(tag: string): boolean {
+    return !this.isNotIn(tag, this.resultsArray);
   }
 
   setGetSettingsListener(): Subscription {
@@ -408,6 +430,7 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
         this.currentFolder = result;
         this.setProgressAndFeedback(false, 'Opened Directory.', true);
         setTimeout(() => {
+          this.filesAndTags = {};
           this.getFilesByType();
         }, 500);
       });

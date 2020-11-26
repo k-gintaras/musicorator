@@ -191,6 +191,9 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
     case 'getSettings':
       startGetSettings(optionsObj);
       break;
+    case 'saveSettings':
+      startSaveSettings(optionsObj);
+      break;
 
     default:
       feedback('Wrong Request: ' + key);
@@ -570,9 +573,15 @@ async function setupSettingFile() {
 }
 
 function startGetSettings() {
+  feedback('Getting Settings.');
+
   getSettingsFile()
     .then((res) => {
-      doRespondBack('getSettings', JSON.parse(res));
+      if (isValidJson(res)) {
+        doRespondBack('getSettings', JSON.parse(res));
+      } else {
+        feedback('Something wrong with JSON settings file.');
+      }
     })
     .catch((err) => {
       if (err) {
@@ -581,16 +590,36 @@ function startGetSettings() {
     });
 }
 
-function startSaveSettings(data) {
-  getSettingsFile(data)
-    .then((res) => {
-      doRespondBack('saveSettings', res);
-    })
-    .catch((err) => {
-      if (err) {
-        feedback(err);
-      }
-    });
+function startSaveSettings(dataObject) {
+  feedback('Saving Settings.');
+  const data = dataObject.data;
+
+  if (data) {
+    const json = JSON.stringify(data);
+    if (json) {
+      saveSettingsFile(json)
+        .then((res) => {
+          feedback('Saved Settings.');
+          doRespondBack('saveSettings', res);
+        })
+        .catch((err) => {
+          if (err) {
+            feedback(err);
+          }
+        });
+    }
+  } else {
+    feedback('Not saving empty data.');
+  }
+}
+
+function isValidJson(json) {
+  try {
+    JSON.parse(json);
+  } catch (e) {
+    return false;
+  }
+  return true;
 }
 
 function getSettingsFile() {

@@ -17,6 +17,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
+import { MatTabsModule } from '@angular/material/tabs';
 
 // other angular
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -34,6 +35,8 @@ import { PrettyCodeComponent } from './pretty-code/pretty-code.component';
 import { SortableSearchableTableComponent } from './sortable-searchable-table/sortable-searchable-table.component';
 import { AntiSpamClickDirective } from './anti-spam-click.directive';
 import { TaggingFromFileComponent } from './tagging-from-file/tagging-from-file.component';
+import { TagStepperComponent } from './tag-stepper/tag-stepper.component';
+import { SuggestionManagerComponent } from './suggestion-manager/suggestion-manager.component';
 
 @NgModule({
   declarations: [
@@ -47,6 +50,8 @@ import { TaggingFromFileComponent } from './tagging-from-file/tagging-from-file.
     SortableSearchableTableComponent,
     AntiSpamClickDirective,
     TaggingFromFileComponent,
+    TagStepperComponent,
+    SuggestionManagerComponent,
   ],
   imports: [
     BrowserModule,
@@ -65,6 +70,7 @@ import { TaggingFromFileComponent } from './tagging-from-file/tagging-from-file.
     MatProgressBarModule,
     MatSortModule,
     MatInputModule,
+    MatTabsModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

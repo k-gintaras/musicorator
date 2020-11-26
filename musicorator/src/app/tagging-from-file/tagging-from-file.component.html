@@ -1,58 +1,23 @@
 <div class="container-fluid">
   <div class="menu">
     <div class="container-fluid">
-      <div class="row tight-row">
-        <div class="col-2">{{ getFileName(currentFile) }}</div>
-        <div class="col-10">{{ currentFile }}</div>
-      </div>
-      <div class="row tight-row" *ngFor="let row of suggestionsAsMatrix">
-        <div class="col-2">{{ row.title }}</div>
-        <div class="col-10">
-          <mat-chip-list>
-            <mat-chip
-              (click)="tryAddValidated(tag.name, resultsArray)"
-              *ngFor="let tag of row.value"
-              style="color: white"
-              [ngStyle]="{
-                'background-color': tag.color,
-                'min-height': '25px',
-                'font-size': 'small'
-              }"
-            >
-              {{ tag.name }}
-            </mat-chip></mat-chip-list
-          >
+      <div class="row">{{ currentFile }}</div>
+      <div class="row">
+        <div class="text-center">
+          <div *ngIf="suggestionsAsMatrix">
+            <app-tag-stepper
+              [matrix]="suggestionsAsMatrix"
+              [resultsArray]="resultsArray"
+              [isNextOnSelect]="isNextOnSelect"
+              [isAutoSort]="isAutoSort"
+            ></app-tag-stepper>
+          </div>
         </div>
       </div>
+
+      <hr />
       <div class="row tight-row">
-        <div class="col-2">custom</div>
-        <div class="col-10">
-          <mat-chip-list #customId>
-            <mat-chip
-              *ngFor="let item of songSuggestions.concat(custom)"
-              (click)="tryAddValidated(item, resultsArray)"
-              style="color: white"
-              [ngStyle]="{
-                'background-color': 'grey',
-                'min-height': '25px',
-                'font-size': 'small'
-              }"
-              [removable]="true"
-              (removed)="removeCustom(item)"
-            >
-              {{ item }}
-            </mat-chip>
-            <input
-              placeholder="New Type..."
-              [matChipInputFor]="customId"
-              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-              (matChipInputTokenEnd)="addCustom($event)"
-            />
-          </mat-chip-list>
-        </div>
-      </div>
-      <div class="row tight-row">
-        <div class="col-2">current</div>
+        <div class="col-2" style="font-weight: bold">current</div>
         <div class="col-10">
           <mat-chip-list>
             <mat-chip
@@ -81,6 +46,11 @@
         <div class="checkbox">
           <mat-checkbox [(ngModel)]="isSaveOnEnter">Save On Enter</mat-checkbox>
         </div>
+        <div class="checkbox">
+          <mat-checkbox [(ngModel)]="isNextOnSelect"
+            >Next On Select</mat-checkbox
+          >
+        </div>
       </div>
     </div>
     <!-- menu end -->
@@ -95,11 +65,26 @@
         appAntiSpamClick
         (debounceClick)="setCurrentFile(file)"
         [debounceTime]="1000"
-        class="col-10 button-align clickable-text"
+        class="col-4 button-align clickable-text"
       >
         {{ getFileName(file) }}
       </div>
-      <div class="col-2">
+      <div class="col-7 button-align">
+        <mat-chip-list>
+          <mat-chip
+            *ngFor="let tag of getFileData(file)"
+            style="color: white"
+            [ngStyle]="{
+              'background-color': getColor(tag),
+              'min-height': '25px',
+              'font-size': 'small'
+            }"
+          >
+            {{ tag }}
+          </mat-chip>
+        </mat-chip-list>
+      </div>
+      <div class="col-1">
         <button
           class="mini-button"
           mat-mini-fab
