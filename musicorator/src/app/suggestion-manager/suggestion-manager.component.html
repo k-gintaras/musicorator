@@ -159,18 +159,21 @@
       </mat-tab>
     </mat-tab-group>
   </div>
-</div>
 
-<span class="footer-feedback" style="color: grey">
-  Last action: {{ currentFeedback }}</span
->
+  <span class="footer-feedback" style="color: grey">
+    Last action: {{ currentFeedback }}</span
+  >
 
-<div class="footer">
-  <button mat-fab color="primary" (click)="saveSettings()">
-    <mat-icon>save</mat-icon>
-  </button>
-  <div *ngIf="isLoading">
-    Loading...
-    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+  <div class="footer">
+    <button mat-fab color="primary" (click)="saveSettings()">
+      <mat-icon>save</mat-icon>
+    </button>
+    <div *ngIf="isLoading">
+      Loading...
+      <mat-progress-bar
+        mode="determinate"
+        [value]="progress"
+      ></mat-progress-bar>
+    </div>
   </div>
 </div>

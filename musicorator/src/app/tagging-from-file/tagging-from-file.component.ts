@@ -45,19 +45,19 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
 
   // allow next song
   currentFilePositionInArray = 0;
-  isAutoplay = false;
+  isAutoplay = true;
 
   suggestionsFromFile;
   suggestionsAsArray;
   suggestionsAsMatrix;
   resultsArray = [];
-  isAutoSort;
+  isAutoSort = true;
   isSaveOnEnter = true;
-  isNextOnSelect = false;
 
   songSuggestions = [];
   custom = [];
   filesAndTags = {};
+  selectedGroups = [];
 
   suggestionKeys = [
     'album',
@@ -84,14 +84,14 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
     }
   }
 
-  getFileData(file: string): string {
+  getFileData(file: string): string[] {
     const name = this.getFileName(file);
     if (this.filesAndTags) {
       if (this.filesAndTags[name]) {
         return this.filesAndTags[name];
       }
     }
-    return '';
+    return [];
   }
 
   saveSongData(): void {
@@ -182,7 +182,9 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     for (const subscription of this.subscriptions) {
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     }
   }
 
@@ -258,6 +260,7 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
       }
     }
     this.resultsArray = tags;
+    this.selectedGroups = [];
   }
 
   getColor(tag): string {
@@ -427,12 +430,14 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
     return this.communicator
       .listenToElectronConstantly('openDirectory')
       .subscribe((result) => {
-        this.currentFolder = result;
-        this.setProgressAndFeedback(false, 'Opened Directory.', true);
-        setTimeout(() => {
-          this.filesAndTags = {};
-          this.getFilesByType();
-        }, 500);
+        if (result) {
+          this.currentFolder = result;
+          this.setProgressAndFeedback(false, 'Opened Directory.', true);
+          setTimeout(() => {
+            this.filesAndTags = {};
+            this.getFilesByType();
+          }, 500);
+        }
       });
   }
 
@@ -440,8 +445,10 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
     return this.communicator
       .listenToElectronConstantly('getFilesByType')
       .subscribe((result) => {
-        this.folders = result;
-        this.setProgressAndFeedback(false, 'Received Files.', true);
+        if (result) {
+          this.folders = result;
+          this.setProgressAndFeedback(false, 'Received Files.', true);
+        }
       });
   }
 

@@ -7,6 +7,7 @@ body {
   height: 100%;
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: rgb(69, 84, 89);
 }
 
 .tight-row {
@@ -96,6 +97,7 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   position: fixed;
   bottom: 0px;
   padding: 5px;
+  z-index: 999;
 }
 
 .footer-feedback {
@@ -106,6 +108,7 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   position: fixed;
   bottom: 0px;
   padding: 5px;
+  z-index: 998;
 }
 
 *.unselectable {

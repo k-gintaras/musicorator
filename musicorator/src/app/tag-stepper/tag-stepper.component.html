@@ -1,10 +1,19 @@
-<div class="container-fluid">
-  <div class="row" style="margin-bottom: 20px">
+<div class="container-fluid unselectable">
+  <div class="row" style="margin-bottom: 10px">
     <button
+      class="low-height"
       [ngStyle]="
         currentRow.title === row.title
-          ? { 'font-weight': 'bold' }
-          : { 'font-weight': 'normal' }
+          ? {
+              'font-weight': 'bold',
+              'font-size': '13px',
+              'line-height': '30px'
+            }
+          : {
+              'font-weight': 'normal',
+              'font-size': '13px',
+              'line-height': '30px'
+            }
       "
       mat-raised-button
       *ngFor="let row of matrix"
@@ -14,12 +23,16 @@
     </button>
   </div>
   <div class="row">
-    <div class="col-2">{{ currentRow.title }}</div>
+    <div class="col-2">
+      {{ currentRow.title }}
+    </div>
     <div class="col-10">
       <mat-chip-list>
         <mat-chip
           *ngFor="let tag of currentRow.value"
-          (click)="tryAddValidated(tag.name, resultsArray); showNext()"
+          (click)="
+            tryAddValidatedWithGroup(tag, resultsArray, false); showNext()
+          "
           [ngStyle]="{
             color: 'white',
             border: isThisTagSelected(tag.name) ? '2px solid black' : '',
@@ -33,34 +46,33 @@
       </mat-chip-list>
     </div>
   </div>
-</div>
-<hr />
-
-<div>
-  <mat-chip-list #customId>
-    <span style="font-weight: bold; padding-right: 5px"> custom </span>
-    <mat-chip
-      *ngFor="let item of songSuggestions.concat(custom)"
-      (click)="tryAddValidated(item, resultsArray)"
-      style="color: white"
-      [ngStyle]="{
-        'background-color': 'grey',
-        'min-height': '25px',
-        'font-size': 'small'
-      }"
-      [removable]="true"
-      (removed)="removeCustom(item)"
-    >
-      {{ item }}
-    </mat-chip>
-    <input
-      style="max-width: 100px"
-      placeholder="New Type..."
-      [matChipInputFor]="customId"
-      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-      (matChipInputTokenEnd)="addCustom($event)"
-    />
-  </mat-chip-list>
+  <hr />
+  <div class="row" style="padding-left: 10px">
+    <mat-chip-list #customId>
+      <span style="font-weight: bold; padding-right: 5px"> custom </span>
+      <mat-chip
+        *ngFor="let item of songSuggestions.concat(custom)"
+        (click)="tryAddValidated(item, resultsArray, true)"
+        style="color: white"
+        [ngStyle]="{
+          'background-color': 'grey',
+          'min-height': '25px',
+          'font-size': 'small'
+        }"
+        [removable]="true"
+        (removed)="removeCustom(item)"
+      >
+        {{ item }}
+      </mat-chip>
+      <input
+        style="max-width: 100px"
+        placeholder="New Type..."
+        [matChipInputFor]="customId"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        (matChipInputTokenEnd)="addCustom($event)"
+      />
+    </mat-chip-list>
+  </div>
 </div>
 
 <div
@@ -73,12 +85,19 @@
 <div *ngIf="isOpen">
   <div class="container-fluid unselectable">
     <div class="row tight-row" *ngFor="let row of matrix">
-      <div class="col-2">{{ row.title }}</div>
+      <div
+        class="col-2"
+        [ngStyle]="{
+          border: isThisGroupSelected(row.title) ? '2px solid black' : ''
+        }"
+      >
+        {{ row.title }}
+      </div>
       <div class="col-10">
         <mat-chip-list>
           <div *ngFor="let tag of row.value">
             <mat-chip
-              (click)="tryAddValidated(tag.name, resultsArray)"
+              (click)="tryAddValidatedWithGroup(tag, resultsArray, true)"
               style="color: white"
               [ngStyle]="{
                 color: 'white',
@@ -90,34 +109,7 @@
             >
               {{ tag.name }}
             </mat-chip>
-          </div></mat-chip-list
-        >
-      </div>
-    </div>
-    <div class="row tight-row">
-      <div class="col-2">custom</div>
-      <div class="col-10">
-        <mat-chip-list #customId>
-          <mat-chip
-            *ngFor="let item of songSuggestions.concat(custom)"
-            (click)="tryAddValidated(item, resultsArray)"
-            style="color: white"
-            [ngStyle]="{
-              'background-color': 'grey',
-              'min-height': '25px',
-              'font-size': 'small'
-            }"
-            [removable]="true"
-            (removed)="removeCustom(item)"
-          >
-            {{ item }}
-          </mat-chip>
-          <input
-            placeholder="New Type..."
-            [matChipInputFor]="customId"
-            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-            (matChipInputTokenEnd)="addCustom($event)"
-          />
+          </div>
         </mat-chip-list>
       </div>
     </div>

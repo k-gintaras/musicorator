@@ -6,7 +6,7 @@ import { SuggestionManagerComponent } from './suggestion-manager/suggestion-mana
 import { TaggingFromFileComponent } from './tagging-from-file/tagging-from-file.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/suggestions-manager', pathMatch: 'full' },
+  { path: '', redirectTo: '/music-tagger-file', pathMatch: 'full' },
   {
     path: 'music-tagger',
     component: MusicTaggerListComponent,

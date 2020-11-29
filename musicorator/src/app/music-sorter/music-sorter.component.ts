@@ -61,7 +61,9 @@ export class MusicSorterComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     for (const subscription of this.subscriptions) {
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     }
   }
 

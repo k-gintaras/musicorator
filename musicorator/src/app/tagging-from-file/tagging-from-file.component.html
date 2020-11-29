@@ -2,14 +2,15 @@
   <div class="menu">
     <div class="container-fluid">
       <div class="row">{{ currentFile }}</div>
-      <div class="row">
+      <div class="row" style="padding-left: 10px">
         <div class="text-center">
           <div *ngIf="suggestionsAsMatrix">
             <app-tag-stepper
               [matrix]="suggestionsAsMatrix"
               [resultsArray]="resultsArray"
-              [isNextOnSelect]="isNextOnSelect"
+              [songSuggestions]="songSuggestions"
               [isAutoSort]="isAutoSort"
+              [selectedGroups]="selectedGroups"
             ></app-tag-stepper>
           </div>
         </div>
@@ -46,10 +47,32 @@
         <div class="checkbox">
           <mat-checkbox [(ngModel)]="isSaveOnEnter">Save On Enter</mat-checkbox>
         </div>
-        <div class="checkbox">
+        <!-- <div class="checkbox">
           <mat-checkbox [(ngModel)]="isNextOnSelect"
             >Next On Select</mat-checkbox
           >
+        </div> -->
+        <div style="margin-left: 15px">
+          <button
+            class="mini-button"
+            mat-mini-fab
+            color="white"
+            (click)="playSong(currentFile)"
+            aria-label="Play"
+          >
+            <mat-icon>play_arrow</mat-icon>
+          </button>
+        </div>
+        <div style="margin-left: 5px">
+          <button
+            class="mini-button"
+            mat-mini-fab
+            color="white"
+            (click)="saveSongData()"
+            aria-label="Play"
+          >
+            <mat-icon>save</mat-icon>
+          </button>
         </div>
       </div>
     </div>

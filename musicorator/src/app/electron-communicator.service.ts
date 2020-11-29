@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HelperService } from './helper.service';
-import { SuggestionService } from './music-tagging/suggestion.service';
+import { SuggestionService } from './tagging-from-file/suggestion.service';
 import { TestDataService } from './test-data.service';
 // const ipc = (window as any).require('electron').ipcRenderer;
 
@@ -101,9 +101,7 @@ export class ElectronCommunicatorService {
             subscriber.next(this.t.getTestData()[0].data);
             break;
           case 'getSettings':
-            subscriber.next(
-              this.suggestionService.suggestionTagsDiscretizedAdvanced
-            );
+            subscriber.next(JSON.parse(this.suggestionService.suggestionsJson));
             break;
 
           default:
