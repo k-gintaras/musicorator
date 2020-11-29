@@ -69,6 +69,12 @@ export class ElectronCommunicatorService {
   listenElectron(key: string): Observable<any> {
     const observable = new Observable((subscriber) => {
       try {
+        // TODO: potential memory leak fix
+        // on responseFromMain instead of each separately, response should include {key:string,response:any}
+        // each response in index.js then would respond this instead
+        // then listen to electron constantly responseFromMain, subscribe, switch key, if key, key - some data, if some data
+        // then, ondestroy, tell this service to ipc.removeListener('responseFromMain', the observable that we store as this.listenElectronObservable)
+
         this.ipc.on(key, (event, arg) => {
           this.zone.run(() => {
             subscriber.next(arg);

@@ -62,7 +62,11 @@ export class MusicSorterComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     for (const subscription of this.subscriptions) {
       if (subscription) {
-        subscription.unsubscribe();
+        try {
+          subscription.next();
+          subscription.complete();
+          subscription.unsubscribe();
+        } catch (error) {}
       }
     }
   }
@@ -150,15 +154,19 @@ export class MusicSorterComponent implements OnInit, OnDestroy {
     return this.communicator
       .listenToElectronConstantly('openDirectory')
       .subscribe((result) => {
-        this.folder = result;
-        this.newDir = result;
-        this.musicSortables = [];
-        this.filteredMusic = [];
-        this.folders = [];
-        this.setProgressAndFeedback(false, 'Opened Directory.', true);
-        setTimeout(() => {
-          this.getFilesByType();
-        }, 500);
+        if (result) {
+          this.folder = result;
+          this.newDir = result;
+          this.musicSortables = [];
+          this.filteredMusic = [];
+          this.folders = [];
+          this.setProgressAndFeedback(false, 'Opened Directory.', true);
+          setTimeout(() => {
+            this.getFilesByType();
+          }, 500);
+        } else {
+          this.setProgressAndFeedback(false, 'Open folder failed.', true);
+        }
       });
   }
 
@@ -166,11 +174,15 @@ export class MusicSorterComponent implements OnInit, OnDestroy {
     return this.communicator
       .listenToElectronConstantly('getFilesByType')
       .subscribe((result) => {
-        this.folders = result;
-        this.setProgressAndFeedback(false, 'Received Files.', true);
-        setTimeout(() => {
-          this.loadAllFiles();
-        }, 500);
+        if (result) {
+          this.folders = result;
+          this.setProgressAndFeedback(false, 'Received Files.', true);
+          setTimeout(() => {
+            this.loadAllFiles();
+          }, 500);
+        } else {
+          this.setProgressAndFeedback(false, 'Get Files failed.', true);
+        }
       });
   }
 
@@ -178,8 +190,12 @@ export class MusicSorterComponent implements OnInit, OnDestroy {
     return this.communicator
       .listenToElectronConstantly('getAllMusicData')
       .subscribe((result) => {
-        this.loadSortableObjects(result);
-        this.setProgressAndFeedback(false, 'Received Data.', true);
+        if (result) {
+          this.loadSortableObjects(result);
+          this.setProgressAndFeedback(false, 'Received Data.', true);
+        } else {
+          this.setProgressAndFeedback(false, 'Get Data failed.', true);
+        }
       });
   }
 

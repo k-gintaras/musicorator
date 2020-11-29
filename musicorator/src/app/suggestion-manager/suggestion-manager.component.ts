@@ -143,7 +143,13 @@ export class SuggestionManagerComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     for (const subscription of this.subscriptions) {
-      subscription.unsubscribe();
+      if (subscription) {
+        try {
+          subscription.next();
+          subscription.complete();
+          subscription.unsubscribe();
+        } catch (error) {}
+      }
     }
   }
 
@@ -166,8 +172,10 @@ export class SuggestionManagerComponent implements OnInit, OnDestroy {
           this.bigMatrix = this.getSuggestionsAsBigMatrix();
           this.groups = this.getGroups();
           this.currentColorArrayString = this.bigMatrix.colors.join(',');
+          this.setProgressAndFeedback(false, 'Got Settings.', false);
+        } else {
+          this.setProgressAndFeedback(false, 'Get Settings Failed.', false);
         }
-        this.setProgressAndFeedback(false, 'Got Settings.', false);
       });
   }
 

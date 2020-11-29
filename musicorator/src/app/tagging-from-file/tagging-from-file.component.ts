@@ -183,7 +183,11 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     for (const subscription of this.subscriptions) {
       if (subscription) {
-        subscription.unsubscribe();
+        try {
+          subscription.next();
+          subscription.complete();
+          subscription.unsubscribe();
+        } catch (error) {}
       }
     }
   }
@@ -341,8 +345,10 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
           this.suggestionsFromFile = result.tags;
           this.suggestionsAsArray = this.getSuggestionsAsArray();
           this.suggestionsAsMatrix = this.getSuggestionsAsMatrix();
+          this.setProgressAndFeedback(false, 'Got Settings.', false);
+        } else {
+          this.setProgressAndFeedback(false, 'Get Settings Failed.', false);
         }
-        this.setProgressAndFeedback(false, 'Got Settings.', false);
       });
   }
 
@@ -437,6 +443,8 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
             this.filesAndTags = {};
             this.getFilesByType();
           }, 500);
+        } else {
+          this.setProgressAndFeedback(false, 'Open Folder Failed.', false);
         }
       });
   }
@@ -448,6 +456,8 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
         if (result) {
           this.folders = result;
           this.setProgressAndFeedback(false, 'Received Files.', true);
+        } else {
+          this.setProgressAndFeedback(false, 'Get Files Failed.', false);
         }
       });
   }
@@ -464,9 +474,13 @@ export class TaggingFromFileComponent implements OnInit, OnDestroy {
     return this.communicator
       .listenToElectronConstantly('getMusicData')
       .subscribe((result) => {
-        this.currentMetaDataObject = result;
-        this.setProgressAndFeedback(false, 'Received Audio Data.', false);
-        this.setSongDetails(result);
+        if (result) {
+          this.currentMetaDataObject = result;
+          this.setProgressAndFeedback(false, 'Received Audio Data.', false);
+          this.setSongDetails(result);
+        } else {
+          this.setProgressAndFeedback(false, 'Get Data Failed.', false);
+        }
       });
   }
 
