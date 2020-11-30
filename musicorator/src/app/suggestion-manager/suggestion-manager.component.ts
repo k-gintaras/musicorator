@@ -145,8 +145,6 @@ export class SuggestionManagerComponent implements OnInit, OnDestroy {
     for (const subscription of this.subscriptions) {
       if (subscription) {
         try {
-          subscription.next();
-          subscription.complete();
           subscription.unsubscribe();
         } catch (error) {}
       }

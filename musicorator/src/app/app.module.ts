@@ -37,6 +37,7 @@ import { AntiSpamClickDirective } from './anti-spam-click.directive';
 import { TaggingFromFileComponent } from './tagging-from-file/tagging-from-file.component';
 import { TagStepperComponent } from './tag-stepper/tag-stepper.component';
 import { SuggestionManagerComponent } from './suggestion-manager/suggestion-manager.component';
+import { SuggestionFilterComponent } from './suggestion-filter/suggestion-filter.component';
 
 @NgModule({
   declarations: [
@@ -52,6 +53,7 @@ import { SuggestionManagerComponent } from './suggestion-manager/suggestion-mana
     TaggingFromFileComponent,
     TagStepperComponent,
     SuggestionManagerComponent,
+    SuggestionFilterComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,31 +1,29 @@
 // stop chrome complaining
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
+let {
+  getFiles,
+  getFilesByType,
+  getMusicDataExtra,
+  setMusicData,
+  saveFile,
+  copyFileExtra,
+  getFile,
+  getCurrentFolder,
+  doCreateFolder,
+  doOpenDir,
+  getJoinedPath,
+  doPlayAudio,
+  openPathInShell,
+  copyAllFiles,
+} = require('./files-promises');
+
 // a must have
 let { app, ipcMain } = require('electron');
 
 // globals
-let canBigError = false;
 let appWindow;
 let currentEvent;
-
-// imports later...
-// electron
-let shell;
-let dialog;
-let remote;
-// fs
-let readdir;
-let copyFile;
-let mkdir;
-let readFile;
-let writeFile;
-// path
-let resolve;
-let join;
-let basename;
-// id3
-let nodeId3;
 
 // other
 const settingsFileName = 'user-settings.json';
@@ -36,7 +34,6 @@ const suggestionsJson =
 function initWindow() {
   const { format } = require('url');
   const { BrowserWindow } = require('electron');
-  canBigError = true;
   //frame:false to disable windows header with close and stuff
   appWindow = new BrowserWindow({
     width: 1200,
@@ -90,7 +87,6 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
     'setMusicData',
     'getAllMusicData',
     'copyAllFiles',
-    'openDirectoryResponsibly',
   ];
   // optionsObj={
   //  anyName:any,
@@ -114,9 +110,6 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
   switch (key) {
     case 'openDirectory':
       startOpenDirectory(optionsObj);
-      break;
-    case 'openDirectoryResponsibly':
-      startOpenDirectoryResponsibly(optionsObj);
       break;
     case 'getDirectoryAllFiles':
       startGetDirectoryAllFiles(optionsObj);
@@ -189,13 +182,6 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
 //     });
 // }
 
-function doRespondBack(key, response) {
-  if (currentEvent) {
-    currentEvent.sender.send(key, response);
-  }
-}
-
-// TODO: test this
 function doRespondBackObject(keyIn, responseIn) {
   const responseObject = { key: keyIn, response: responseIn };
   if (currentEvent) {
@@ -204,15 +190,17 @@ function doRespondBackObject(keyIn, responseIn) {
 }
 
 function feedback(s) {
-  doRespondBack('getFeedback', s);
+  doRespondBackObject('getFeedback', s);
 }
 
 function startOpenDirectory(options) {
-  doOpenDir(options);
-}
-
-function startOpenDirectoryResponsibly(options) {
-  doOpenDirResponsibly(options);
+  doOpenDir(appWindow)
+    .then((data) => {
+      doRespondBackObject('openDirectory', data.filePaths[0]);
+    })
+    .catch((err) => {
+      feedback(err);
+    });
 }
 
 function startGetDirectoryAllFiles(options) {
@@ -220,7 +208,7 @@ function startGetDirectoryAllFiles(options) {
   if (dir) {
     getFiles(dir)
       .then((fileArray) => {
-        doRespondBack.send('getDirectoryAllFiles', fileArray);
+        doRespondBackObject('getDirectoryAllFiles', fileArray);
       })
       .catch((err) => {
         feedback(err.message);
@@ -234,37 +222,16 @@ function startCreateFolder(options) {
   const where = options.where;
   const dirName = options.name;
   if (where && dirName) {
-    doCreateFolder(where, dirName);
+    doCreateFolder(where, dirName)
+      .then(() => {
+        doRespondBackObject('createFolder', 'Created Folder.');
+      })
+      .catch((res) => {
+        feedback(res);
+      });
   } else {
     feedback('Missing Create Folder Data.');
   }
-}
-
-function startGetLastfmWebsite(options) {
-  // TODO: use own data
-  // Application name	music searcher
-  // API key	fe9f2adbe646d34240330df269571bb4
-  // Shared secret	202df50802f63dd74b55079f8499c232
-  // Registered to	ubaby_original
-  // let title = options.title;
-  // let artist = options.artist;
-  // var lfm = new LastfmAPI({
-  //   api_key: "fe9f2adbe646d34240330df269571bb4",
-  //   secret: "202df50802f63dd74b55079f8499c232",
-  // });
-  // lfm.track.getInfo(
-  //   {
-  //     artist: artist,
-  //     track: title,
-  //   },
-  //   (err, track) => {
-  //     if (err) {
-  //       throw err;
-  //     } else {
-  //       console.log(track);
-  //     }
-  //   }
-  // );
 }
 
 function startGetWebsite(options) {
@@ -298,7 +265,7 @@ function startGetFilesByType(options) {
   if (type && dir) {
     getFilesByType(dir, type)
       .then((fileArray) => {
-        doRespondBack('getFilesByType', fileArray);
+        doRespondBackObject('getFilesByType', fileArray);
       })
       .catch((err) => {
         feedback(err);
@@ -313,7 +280,7 @@ function startGetMusicData(options) {
   if (dir) {
     getMusicData(dir)
       .then((metadata) => {
-        doRespondBack('getMusicData', metadata);
+        doRespondBackObject('getMusicData', metadata);
       })
       .catch((err) => {
         feedback(err);
@@ -329,7 +296,7 @@ function startSetMusicData(options) {
   if (dir && tagsObject) {
     setMusicData(dir, tagsObject)
       .then((metadata) => {
-        doRespondBack('setMusicData', metadata);
+        doRespondBackObject('setMusicData', metadata);
       })
       .catch((err) => {
         feedback(err.message);
@@ -348,12 +315,20 @@ function startGetAllMusicData(options) {
     if (filesArray.length > 0) {
       for (let i = 0; i < filesArray.length; i++) {
         const file = filesArray[i];
-        promises.push(getMusicDataExtra(file));
+        const musicDataPromise = getMusicDataExtra(file)
+          .then((result) => {
+            feedback(dir);
+            return { file: dir, data: result };
+          })
+          .catch((err) => {
+            return { file: dir, data: err };
+          });
+        promises.push(musicDataPromise);
       }
 
       Promise.all(promises)
         .then((result) => {
-          doRespondBack('getAllMusicData', result);
+          doRespondBackObject('getAllMusicData', result);
         })
         .catch((err) => {
           feedback(err.message);
@@ -367,185 +342,50 @@ function startGetAllMusicData(options) {
 }
 
 function startCopyAllFiles(options) {
-  if (!basename) {
-    basename = require('path').basename;
-  }
   feedback('Copying Files: ');
-  const promises = [];
 
+  const validated = validateCopyFilesRequest(options);
+  if (validated) {
+    copyAllFiles(folderWhere, folderName, filesArray, feedback)
+      .then(() => {
+        doRespondBackObject('copyAllFiles', 'Completed Copying.');
+        openPathInShell(newFolder);
+      })
+      .catch((err) => {
+        feedback(err);
+      });
+  }else{
+    feedback("Not copying empty. "+folderWhere+","+ folderName+","+filesArray);
+  }
+}
+
+function validateCopyFilesRequest(options) {
   if (options) {
     const folderWhere = options.folder;
     const folderName = options.name;
     const filesArray = options.folders;
     if (folderWhere && folderName && filesArray) {
       if (filesArray.length > 0) {
-        const newFolder = getJoinedPath(folderWhere, folderName);
-
-        for (let i = 0; i < filesArray.length; i++) {
-          const file = filesArray[i];
-          const fileName = basename(file);
-          const toWhereWithFileName = getJoinedPath(newFolder, fileName);
-          promises.push(copyFileExtra(file, toWhereWithFileName));
-        }
-
-        Promise.all(promises)
-          .then(() => {
-            doRespondBack('copyAllFiles', 'Completed Copying.');
-            openPathInShell(newFolder);
-          })
-          .catch((err) => {
-            feedback(err);
-          });
-      } else {
-        feedback('Missing Copy All Data 3.');
-      }
-    } else {
-      feedback('Missing Copy All Data 2.');
-    }
-  } else {
-    feedback('Missing Copy All Data 1.');
-  }
-}
-
-// function isValidPath(path) {
-//   if (path) {
-//     return true;
-//   }
-//   return false;
-// }
-
-function copyFileExtra(fromWhereWithFileName, toWhereWithFileName) {
-  if (!copyFile) {
-    copyFile = require('fs').promises.copyFile;
-  }
-  return copyFile(fromWhereWithFileName, toWhereWithFileName)
-    .then(() => {
-      feedback(
-        'Moved: ' + fromWhereWithFileName + ' to: ' + toWhereWithFileName
-      );
-    })
-    .catch((err) => {
-      feedback(err);
-    });
-}
-
-function doOpenDir(options) {
-  if (!dialog) {
-    dialog = require('electron').dialog;
-  }
-  dialog
-    .showOpenDialog(appWindow, {
-      properties: ['openDirectory'],
-    })
-    .then((data) => {
-      doRespondBack('openDirectory', data.filePaths[0]);
-    })
-    .catch((err) => {
-      feedback(err);
-    });
-}
-
-/**
- * responseFromMain
- * {key: string, response: any}
- */
-function doOpenDirResponsibly(options) {
-  if (!dialog) {
-    dialog = require('electron').dialog;
-  }
-  dialog
-    .showOpenDialog(appWindow, {
-      properties: ['openDirectory'],
-    })
-    .then((data) => {
-      doRespondBack('responseFromMain', {
-        key: 'openDirectory',
-        response: data.filePaths[0],
-      });
-    })
-    .catch((err) => {
-      feedback(err);
-    });
-}
-
-function doCreateFolder(where, dirName) {
-  if (!mkdir) {
-    mkdir = require('fs').promises.mkdir;
-  }
-  const newPath = getJoinedPath(where, dirName);
-  mkdir(newPath)
-    .then(() => {
-      doRespondBack('createFolder', 'Created Folder.');
-    })
-    .catch((res) => {
-      feedback(res);
-    });
-}
-
-function doPlayAudio(dir) {
-  if (!shell) {
-    shell = require('electron').shell;
-  }
-  // shell.openPath(dir);
-  const link = getJoinedPath('file://', dir);
-  shell.openExternal(link);
-}
-
-function getJoinedPath(a, b) {
-  if (!join) {
-    join = require('path').join;
-  }
-  return join(a, b);
-}
-
-function openPathInShell(dir) {
-  if (!shell) {
-    shell = require('electron').shell;
-  }
-  // shell.openPath(dir);
-  const link = getJoinedPath('file://', dir);
-  shell.openExternal(link);
-}
-
-function getMusicData(dir) {
-  if (!nodeId3) {
-    nodeId3 = require('node-id3').Promise;
-  }
-
-  return nodeId3.read(dir, {
-    exclude: ['private', 'PRIV', 'image', 'APIC'],
-  });
-}
-
-function getCurrentFolder() {
-  if (!remote) {
-    remote = require('electron').app;
-  }
-  return remote.getAppPath();
+        return true;
+      } 
+  } 
+  return false;
 }
 
 function doGetFile(dir) {
   getFile(dir)
     .then((res) => {
-      doRespondBack('readFile', res);
+      doRespondBackObject('readFile', res);
     })
     .catch((res) => {
       feedback(res);
     });
 }
 
-function getFile(dir) {
-  if (!readFile) {
-    readFile = require('fs').promises.readFile;
-  }
-
-  return readFile(dir, 'utf8'); // TODO: allow different encoding
-}
-
 function doSaveFile(dir, data) {
   saveFile(dir, data)
     .then((res) => {
-      doRespondBack('writeFile', res);
+      doRespondBackObject('writeFile', res);
     })
     .catch((res) => {
       feedback(res);
@@ -573,7 +413,7 @@ function startGetSettings() {
   getSettingsFile()
     .then((res) => {
       if (isValidJson(res)) {
-        doRespondBack('getSettings', JSON.parse(res));
+        doRespondBackObject('getSettings', JSON.parse(res));
       } else {
         feedback('Something wrong with JSON settings file.');
       }
@@ -595,7 +435,7 @@ function startSaveSettings(dataObject) {
       saveSettingsFile(json)
         .then((res) => {
           feedback('Saved Settings.');
-          doRespondBack('saveSettings', res);
+          doRespondBackObject('saveSettings', res);
         })
         .catch((err) => {
           if (err) {
@@ -635,78 +475,4 @@ function saveSettingsFile(data) {
       feedback(err);
     }
   });
-}
-
-function saveFile(dir, data) {
-  if (!writeFile) {
-    writeFile = require('fs').promises.writeFile;
-  }
-
-  return writeFile(dir, data);
-}
-
-function getMusicDataExtra(dir) {
-  if (!nodeId3) {
-    nodeId3 = require('node-id3').Promise;
-  }
-
-  return nodeId3
-    .read(dir, {
-      exclude: ['private', 'PRIV', 'image', 'APIC'],
-    })
-    .then((result) => {
-      feedback(dir);
-      return { file: dir, data: result };
-    })
-    .catch((err) => {
-      return { file: dir, data: err };
-    });
-}
-
-function setMusicData(dir, tags) {
-  if (!nodeId3) {
-    nodeId3 = require('node-id3').Promise;
-  }
-
-  return nodeId3.update(tags, dir);
-}
-
-// thanks to @qwtel
-// https://stackoverflow.com/questions/5827612/node-js-fs-readdir-recursive-directory-search
-async function getFiles(dir) {
-  if (!readdir) {
-    readdir = require('fs').promises.readdir;
-  }
-  if (!resolve) {
-    resolve = require('path').resolve;
-  }
-  const dirents = await readdir(dir, { withFileTypes: true });
-  const files = await Promise.all(
-    dirents.map((dirent) => {
-      const res = resolve(dir, dirent.name);
-      return dirent.isDirectory() ? getFiles(res) : res;
-    })
-  );
-  return files.reduce((a, f) => a.concat(f), []);
-}
-
-async function getFilesByType(dir, hasString) {
-  if (!readdir) {
-    readdir = require('fs').promises.readdir;
-  }
-  if (!resolve) {
-    resolve = require('path').resolve;
-  }
-  const dirents = await readdir(dir, { withFileTypes: true });
-  const files = await Promise.all(
-    dirents.map((dirent) => {
-      const res = resolve(dir, dirent.name);
-      return dirent.isDirectory() ? getFiles(res) : res;
-    })
-  );
-  return files
-    .reduce((a, f) => a.concat(f), [])
-    .filter((res) => {
-      return res.indexOf(hasString) > -1;
-    });
 }

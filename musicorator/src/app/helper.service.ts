@@ -76,6 +76,29 @@ export class HelperService {
     return ret;
   }
 
+  removeFromArray(item: string, arr: string[]): void {
+    const index = arr.indexOf(item);
+
+    if (index >= 0) {
+      arr.splice(index, 1);
+    }
+  }
+
+  addUniqueToArray(value, arr): void {
+    const unique = this.isNotIn(value, arr);
+
+    if (unique) {
+      if (value) {
+        arr.push(value);
+      }
+    }
+  }
+
+  // only add if unique
+  isNotIn(val: string, arr: string[]): boolean {
+    return !(arr.indexOf(val) > -1);
+  }
+
   getValuesFromKeys(obj, keys): any[] {
     const ret = [];
     for (const key of keys) {

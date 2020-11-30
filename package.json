@@ -3,7 +3,7 @@
   "productName": "Musicorator",
   "version": "1.0.0",
   "description": "Sort music, add tags, copy all files by tags.",
-  "main": "src/index.js",
+  "main": "src/index-clean.js",
   "scripts": {
     "electron": "npm --prefix ./musicorator/ run build && npm --prefix ./ start",
     "start": "electron-forge start",

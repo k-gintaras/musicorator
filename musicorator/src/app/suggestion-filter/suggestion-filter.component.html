@@ -1,0 +1,27 @@
+<p>suggestion-filter works!</p>
+
+
+
+
+<span class="footer-feedback" style="color: grey">
+  Last action: {{ currentFeedback }}</span
+>
+
+<div class="footer">
+  <button
+    mat-fab
+    color="warn"
+    appAntiSpamClick
+    (debounceClick)="openFolder()"
+    [debounceTime]="300"
+    aria-label="Play"
+  >
+    <mat-icon>folder_open</mat-icon>
+  </button>
+  <div *ngIf="isLoading">
+    Loading...
+    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+  </div>
+</div>
+
+<div class="container-fluid" style="height: 500px"></div>

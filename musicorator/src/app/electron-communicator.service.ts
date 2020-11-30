@@ -5,13 +5,36 @@ import { SuggestionService } from './tagging-from-file/suggestion.service';
 import { TestDataService } from './test-data.service';
 // const ipc = (window as any).require('electron').ipcRenderer;
 
+export enum ValidRequest {
+  responseFromMain = 'responseFromMain',
+  openDirectory = 'openDirectoryResponsibly',
+  getDirectoryAllFiles = 'getDirectoryAllFiles',
+  createFolder = 'createFolder',
+  getLastfmWebsite = 'getLastfmWebsite',
+  getWebsite = 'getWebsite',
+  playAudio = 'playAudio',
+  getFilesByType = 'getFilesByType',
+  getMusicData = 'getMusicData',
+  setMusicData = 'setMusicData',
+  getAllMusicData = 'getAllMusicData',
+  copyAllFiles = 'copyAllFiles',
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class ElectronCommunicatorService {
+  communicatorKeys = ['', ''];
   ipc;
   messages = new BehaviorSubject<string>('');
   directory = new BehaviorSubject<string>('');
+  mainResponseObservable;
+
+  // these needed to simulate data if you just use ng serve
+  private electronReceiveSimulatorSubject = new BehaviorSubject<any>('');
+  private electronReceiveSimulatorObservable: Observable<any> = this.electronReceiveSimulatorSubject.asObservable();
+  private electronSendSimulatorSubject = new BehaviorSubject<any>('');
+  private electronSendSimulatorObservable: Observable<any> = this.electronSendSimulatorSubject.asObservable();
 
   constructor(
     private zone: NgZone,
@@ -34,7 +57,7 @@ export class ElectronCommunicatorService {
     if (this.ipc) {
       this.sendElectron(options);
     } else {
-      // this.sendAngular(key, options);
+      this.sendAngular(options);
     }
   }
 
@@ -54,27 +77,35 @@ export class ElectronCommunicatorService {
     }
   }
 
+  /**
+   * responseFromMain
+   * {key: string, response: any}
+   */
+  listenToElectronResponsibly(key: string): Observable<any> {
+    if (this.ipc) {
+      return this.listenElectronResponsibly(key);
+    } else {
+      return this.listenAngularResponsibly();
+    }
+  }
+
   sendElectron(options: any): void {
     this.ipc.send('requestFromRenderer', options);
   }
 
+  // TODO: you can try this, but this creates lots of listeners and gets memory leak warning
   // sendElectron(key: string, options: {}): void {
   //   this.ipc.send(key, options);
   // }
 
-  sendAngular(key: string, parameters: string[]): void {
-    console.log('sending to electron: ' + key);
+  sendAngular(options: any): void {
+    console.log('sending to electron: ' + options.key);
+    this.electronSendSimulatorSubject.next(options);
   }
 
   listenElectron(key: string): Observable<any> {
     const observable = new Observable((subscriber) => {
       try {
-        // TODO: potential memory leak fix
-        // on responseFromMain instead of each separately, response should include {key:string,response:any}
-        // each response in index.js then would respond this instead
-        // then listen to electron constantly responseFromMain, subscribe, switch key, if key, key - some data, if some data
-        // then, ondestroy, tell this service to ipc.removeListener('responseFromMain', the observable that we store as this.listenElectronObservable)
-
         this.ipc.on(key, (event, arg) => {
           this.zone.run(() => {
             subscriber.next(arg);
@@ -83,20 +114,53 @@ export class ElectronCommunicatorService {
         });
       } catch (error) {
         this.feedback('Electron Communicator Error: ' + error);
-        subscriber.next('listenToElectronConstantly Error: ' + key);
+        subscriber.next('listenToElectronConstantly() Error: ' + key);
         subscriber.complete();
       }
     });
     return observable;
   }
 
+  /**
+   * responseFromMain
+   * {key: string, response: any}
+   */
+  listenElectronResponsibly(key: string): Observable<any> {
+    this.mainResponseObservable = new Observable((subscriber) => {
+      try {
+        this.ipc.on(key, (event, arg) => {
+          this.zone.run(() => {
+            subscriber.next(arg);
+            // subscriber.complete(); if you want to stop from listening next values
+          });
+        });
+      } catch (error) {
+        this.feedback('Electron Communicator Error: ' + error);
+        subscriber.next('listenElectronResponsibly() Error: ' + key);
+        subscriber.complete();
+      }
+    });
+    return this.mainResponseObservable;
+  }
+
+  /**
+   * responseFromMain to use onDestroy in addition to unsubscribe
+   */
+  unsubscribeElectron(): void {
+    if (this.mainResponseObservable) {
+      this.ipc.removeListener('responseFromMain', this.mainResponseObservable);
+    }
+  }
+
   listenAngular(key: string): Observable<any> {
+    const responseObject = {
+      key: 'testResponseOne',
+      response: JSON.parse(this.suggestionService.suggestionsJson),
+    };
+
     const observable = new Observable((subscriber) => {
       try {
         switch (key) {
-          case 'openDirectory':
-            subscriber.next('C:/Users');
-            break;
           case 'getFilesByType':
             subscriber.next(this.t.getTestFolders());
             break;
@@ -109,6 +173,12 @@ export class ElectronCommunicatorService {
           case 'getSettings':
             subscriber.next(JSON.parse(this.suggestionService.suggestionsJson));
             break;
+          case 'getTestResponseSettingsOne':
+            subscriber.next(responseObject);
+            break;
+          case ValidRequest.openDirectory:
+            subscriber.next('C:/Users');
+            break;
 
           default:
             break;
@@ -120,6 +190,64 @@ export class ElectronCommunicatorService {
       }
     });
     return observable;
+  }
+
+  listenAngularResponsibly(): Observable<any> {
+    this.electronSendSimulatorObservable.subscribe((response) => {
+      console.log('Received Request From Angular: ');
+      console.log(response);
+      this.handleSimulatedResponse(response);
+    });
+    return this.electronReceiveSimulatorObservable;
+  }
+
+  handleSimulatedResponse(r): void {
+    const key = r.key;
+    const data = r.response;
+
+    const responseObject = {
+      key: 'testResponseOne',
+      response: JSON.parse(this.suggestionService.suggestionsJson),
+    };
+
+    try {
+      switch (key) {
+        case 'getFilesByType':
+          this.electronReceiveSimulatorSubject.next(this.t.getTestFolders());
+          break;
+        case 'getAllMusicData':
+          this.electronReceiveSimulatorSubject.next(this.t.getTestData());
+          break;
+        case 'getMusicData':
+          this.electronReceiveSimulatorSubject.next(
+            this.t.getTestData()[0].data
+          );
+          break;
+        case 'getSettings':
+          this.electronReceiveSimulatorSubject.next(
+            JSON.parse(this.suggestionService.suggestionsJson)
+          );
+          break;
+        case 'getTestResponseSettingsOne':
+          this.electronReceiveSimulatorSubject.next(responseObject);
+          break;
+        case ValidRequest.openDirectory:
+          console.log('Replying to: ' + ValidRequest.openDirectory);
+          responseObject.key = ValidRequest.openDirectory;
+          responseObject.response = 'C:/Users';
+          this.electronReceiveSimulatorSubject.next(responseObject);
+          break;
+
+        default:
+          break;
+      }
+    } catch (error) {
+      this.feedback('Electron Communicator Error: ' + error);
+      this.electronReceiveSimulatorSubject.next(
+        'listenToElectronConstantly Error: ' + key
+      );
+      this.electronReceiveSimulatorSubject.complete();
+    }
   }
 
   getFileName(dir): string {
