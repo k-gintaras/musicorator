@@ -354,8 +354,10 @@ function startCopyAllFiles(options) {
       .catch((err) => {
         feedback(err);
       });
-  }else{
-    feedback("Not copying empty. "+folderWhere+","+ folderName+","+filesArray);
+  } else {
+    feedback(
+      'Not copying empty. ' + folderWhere + ',' + folderName + ',' + filesArray
+    );
   }
 }
 
@@ -367,8 +369,9 @@ function validateCopyFilesRequest(options) {
     if (folderWhere && folderName && filesArray) {
       if (filesArray.length > 0) {
         return true;
-      } 
-  } 
+      }
+    }
+  }
   return false;
 }
 
