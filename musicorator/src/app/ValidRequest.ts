@@ -1,0 +1,17 @@
+export enum ValidRequest {
+  responseFromMain = 'responseFromMain',
+  openDirectory = 'openDirectory',
+  getDirectoryAllFiles = 'getDirectoryAllFiles',
+  createFolder = 'createFolder',
+  getLastfmWebsite = 'getLastfmWebsite',
+  getWebsite = 'getWebsite',
+  playAudio = 'playAudio',
+  getFilesByType = 'getFilesByType',
+  getMusicData = 'getMusicData',
+  setMusicData = 'setMusicData',
+  getAllMusicData = 'getAllMusicData',
+  copyAllFiles = 'copyAllFiles',
+  getSettings = 'getSettings',
+  saveSettings = 'saveSettings',
+  getFeedback = 'getFeedback',
+}

@@ -1,0 +1,26 @@
+<div class="container-fluid unselectable">
+  <div class="row tight-row" *ngFor="let row of matrix">
+    <div class="col-2">
+      {{ row.title }}
+    </div>
+    <div class="col-10">
+      <mat-chip-list>
+        <div *ngFor="let tag of row.value">
+          <mat-chip
+            (click)="tryAddValidatedWithGroup(tag, resultsArray, true)"
+            style="color: white"
+            [ngStyle]="{
+              color: 'white',
+              border: isThisTagSelected(tag.name) ? '2px solid black' : '',
+              'background-color': tag.color,
+              'min-height': '25px',
+              'font-size': 'small'
+            }"
+          >
+            {{ tag.name }}
+          </mat-chip>
+        </div>
+      </mat-chip-list>
+    </div>
+  </div>
+</div>

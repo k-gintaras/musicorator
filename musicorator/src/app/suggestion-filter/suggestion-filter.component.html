@@ -1,27 +1,21 @@
-<p>suggestion-filter works!</p>
-
-
-
-
-<span class="footer-feedback" style="color: grey">
-  Last action: {{ currentFeedback }}</span
->
-
-<div class="footer">
-  <button
-    mat-fab
-    color="warn"
-    appAntiSpamClick
-    (debounceClick)="openFolder()"
-    [debounceTime]="300"
-    aria-label="Play"
-  >
-    <mat-icon>folder_open</mat-icon>
-  </button>
-  <div *ngIf="isLoading">
-    Loading...
-    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+<div class="container-fluid">
+  <div class="row">
+    <app-matrix-json
+      [matrix]="suggestionMatrix"
+      [isSearch]="true"
+      [searchArray]="searchArray"
+      (sendDataToParent)="onJsonMatrixSelection($event)"
+    ></app-matrix-json>
+  </div>
+  <div class="row">
+    <app-sortable-searchable-table
+      (selectedItem)="onTableSelection($event)"
+      (tableChange)="onTableChange($event)"
+      (searchChange)="onTableSearch($event)"
+      [matrixIn]="filteredMatrix"
+      [columnTitlesArray]="matrixTitles"
+      [isFixed]="false"
+      [ignoreColumns]="['dir']"
+    ></app-sortable-searchable-table>
   </div>
 </div>
-
-<div class="container-fluid" style="height: 500px"></div>

@@ -38,6 +38,10 @@ import { TaggingFromFileComponent } from './tagging-from-file/tagging-from-file.
 import { TagStepperComponent } from './tag-stepper/tag-stepper.component';
 import { SuggestionManagerComponent } from './suggestion-manager/suggestion-manager.component';
 import { SuggestionFilterComponent } from './suggestion-filter/suggestion-filter.component';
+import { MatrixStepperComponent } from './matrix-stepper/matrix-stepper.component';
+import { MatrixJsonComponent } from './matrix-json/matrix-json.component';
+import { FileMenuComponent } from './file-menu/file-menu.component';
+import { ProgressComponent } from './progress/progress.component';
 
 @NgModule({
   declarations: [
@@ -54,6 +58,10 @@ import { SuggestionFilterComponent } from './suggestion-filter/suggestion-filter
     TagStepperComponent,
     SuggestionManagerComponent,
     SuggestionFilterComponent,
+    MatrixStepperComponent,
+    MatrixJsonComponent,
+    FileMenuComponent,
+    ProgressComponent,
   ],
   imports: [
     BrowserModule,

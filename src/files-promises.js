@@ -13,6 +13,7 @@ module.exports = {
   doPlayAudio: doPlayAudio,
   openPathInShell: openPathInShell,
   copyAllFiles: copyAllFiles,
+  getAllMusicData: getAllMusicData,
 };
 
 // imports later...
@@ -33,11 +34,65 @@ let basename;
 // id3
 let nodeId3;
 
-function copyAllFiles(folderWhere, folderName, filesArray, feedbackCallback) {
+// TODO: useful
+// function error(s) {
+//   if (s && canBigError) {
+//     popup("Error: ", s)
+//       .then()
+//       .catch((err) => {
+//         console.log(err);
+//       });
+//   } else {
+//     console.log("Error: ", "Unknown Electron App Error!");
+//   }
+// }
+
+// function popup(titleIn, messageIn) {
+//   console.log(messageIn);
+//   const msg = JSON.stringify(messageIn);
+//   return dialog
+//     .showMessageBox(null, {
+//       type: "warning",
+//       defaultId: 2,
+//       title: titleIn,
+//       message: msg,
+//     })
+//     .catch((err) => {
+//       console.log(err);
+//     });
+// }
+
+function getAllMusicData(filesArray, feedbackCallback) {
   let f = feedback;
+
+  if (feedbackCallback) {
+    f = feedbackCallback;
+  }
+  f('Getting Files: ');
+
+  const promises = [];
+
+  for (let i = 0; i < filesArray.length; i++) {
+    const currentFile = filesArray[i];
+    const musicDataPromise = getMusicDataExtra(currentFile)
+      .then((result) => {
+        f(currentFile);
+        return { file: currentFile, data: result };
+      })
+      .catch((err) => {
+        return { file: currentFile, data: err };
+      });
+    promises.push(musicDataPromise);
+  }
+
+  return Promise.all(promises);
+}
+
+function copyAllFiles(folderWhere, folderName, filesArray, feedbackCallback) {
   if (!basename) {
     basename = require('path').basename;
   }
+  let f = feedback;
 
   if (feedbackCallback) {
     f = feedbackCallback;
@@ -99,7 +154,6 @@ function doCreateFolder(where, dirName) {
     mkdir = require('fs').promises.mkdir;
   }
   const newPath = getJoinedPath(where, dirName);
-  todo;
   return mkdir(newPath);
 }
 

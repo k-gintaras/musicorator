@@ -1,1 +1,119 @@
-<p>sortable-searchable-table works!</p>
+<div
+  style="background-color: white"
+  class="clickable-text unselectable"
+  (click)="isMenuOpen = !isMenuOpen"
+>
+  Table Menu
+</div>
+<div *ngIf="isMenuOpen">
+  <div class="container-fluid">
+    <div class="row unselectable" style="margin: 2px">
+      <div style="padding: 2px; margin-right: 5px">Ignore Columns:</div>
+      <div
+        [ngStyle]="{
+          border: isThisIgnored(item) ? '2px solid black' : '',
+          'font-size': 'small'
+        }"
+        (click)="ignoreColumn(item)"
+        *ngFor="let item of columnTitlesArray"
+        class="clickable-text"
+      >
+        {{ item }}
+      </div>
+    </div>
+    <div class="row">
+      <button mat-raised-button (click)="isShowCsv = !isShowCsv">
+        Show CSV
+      </button>
+    </div>
+    <div *ngIf="isShowCsv" class="row">
+      <pre>{{ getCsv() }}</pre>
+    </div>
+  </div>
+</div>
+<div class="table-dark table" style="position: relative">
+  <table
+    [ngStyle]="{ 'table-layout': isFixed ? 'fixed' : 'auto' }"
+    class="table table-striped table-dark"
+  >
+    <thead class="thead-light">
+      <tr>
+        <th>
+          <div class="small-button" (click)="lessThan = !lessThan; setFilter()">
+            <div *ngIf="lessThan">
+              <mat-icon>unfold_more</mat-icon>
+            </div>
+            <div *ngIf="!lessThan">
+              <mat-icon>unfold_less</mat-icon>
+            </div>
+          </div>
+        </th>
+        <th>
+          <div class="small-button" (click)="clearSearch()">
+            <mat-icon>clear</mat-icon>
+          </div>
+        </th>
+
+        <ng-container *ngFor="let item of searchStringsArray; let i = index">
+          <th *ngIf="canShowColumn(i)">
+            <input
+              style="width: 80px"
+              type="text"
+              name="searchString"
+              placeholder="{{
+                item.column === 'tags' ? 'tag,tag' : item.column
+              }}"
+              [(ngModel)]="item.search"
+              (ngModelChange)="setFilter()"
+            />
+          </th>
+        </ng-container>
+      </tr>
+    </thead>
+    <thead class="thead-light">
+      <tr>
+        <th>Clear</th>
+        <th>Info</th>
+        <ng-container *ngFor="let item of columnTitlesArray; let i = index">
+          <th *ngIf="canShowColumn(i)">
+            <div
+              class="clickable-text"
+              style="cursor: pointer"
+              (click)="sortData(item)"
+            >
+              <b>{{ item }}</b>
+            </div>
+          </th>
+        </ng-container>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let row of matrixOut; let i = index">
+        <td>
+          <div class="small-button" (click)="remove(row)">
+            <mat-icon>remove</mat-icon>
+          </div>
+        </td>
+        <td>
+          <div
+            class="small-button"
+            [ngClass]="
+              currentTitle === row[0]
+                ? 'clickable-text selected'
+                : 'clickable-text not-selected'
+            "
+            (click)="onSelectedRow(row)"
+          >
+            <mat-icon>add</mat-icon>
+          </div>
+        </td>
+        <ng-container *ngFor="let item of row; let i = index">
+          <td *ngIf="canShowColumn(i)" class="dont-break-out">
+            {{ item }}
+          </td>
+        </ng-container>
+      </tr>
+    </tbody>
+  </table>
+</div>

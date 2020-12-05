@@ -1,9 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { CommunicatorElectronService } from './communicator-electron.service';
 import { ElectronCommunicatorService } from './electron-communicator.service';
 import { HelperService } from './helper.service';
+import {
+  MetadataObject,
+  MetadataObjectSimple,
+  TagObject,
+} from './MetadataObject';
 import { PopupService } from './popup/popup.service';
+import { ValidRequest } from './ValidRequest';
 export interface MusicSortable {
   dir: string;
   simple: {
@@ -38,6 +45,8 @@ export class DataProcessorService {
   private commonMessageSubject = new BehaviorSubject<string>('');
   private commonMessageObservable: Observable<string> = this.commonMessageSubject.asObservable();
 
+  private musicDataResult;
+
   // audio metadata
   metadataKeys = ['title', 'album', 'artist', 'composer', 'bpm', 'initialKey'];
   // filter
@@ -56,8 +65,167 @@ export class DataProcessorService {
   constructor(
     private dialog: PopupService,
     private helper: HelperService,
-    private communicator: ElectronCommunicatorService
+    private communicator: CommunicatorElectronService
   ) {}
+
+  getMusicDataResult(): any {
+    return this.musicDataResult;
+  }
+
+  setMusicDataResult(result: any): void {
+    this.musicDataResult = result;
+  }
+
+  getFilteredMatrix(
+    matrixIn: any[][],
+    columnNames: string[],
+    searchStringsArray: { column: string; search: string }[],
+    isLessThan: boolean
+  ): any[][] {
+    return matrixIn.filter((item) => {
+      for (const val of searchStringsArray) {
+        const searchColumn = val.column;
+        const b = val.search;
+        if (b) {
+          const pos = columnNames.indexOf(searchColumn);
+          if (pos > -1) {
+            const a = item[pos];
+            const match = this.isMatch(a, b, isLessThan);
+            if (a && a.indexOf(',') > -1) {
+              const tags = b.split(',');
+              for (const tag of tags) {
+                const matchTag = this.isMatch(a, tag, isLessThan);
+                if (!matchTag) {
+                  return false;
+                }
+              }
+            } else {
+              if (!match) {
+                return false;
+              }
+            }
+          }
+        }
+      }
+      return true;
+    });
+  }
+
+  loadAllMusicFiles(foldersIn: string[], feedback?: (s: string) => void): void {
+    this.setMaxForFeedback(foldersIn.length);
+    this.sendElectron(ValidRequest.getAllMusicData, {
+      folders: foldersIn,
+    });
+    const msg = 'Loading Files...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  makeDir(
+    whereIn: string,
+    nameIn: string,
+    feedback?: (s: string) => void
+  ): void {
+    this.setMaxForFeedback(0);
+    this.sendElectron(ValidRequest.createFolder, {
+      folder: whereIn,
+      name: nameIn,
+    });
+    const msg = 'Creating Directory...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  copyDirectory(
+    folderIn: string,
+    nameIn: string,
+    foldersIn: string[],
+    feedback?: (s: string) => void
+  ): void {
+    this.setMaxForFeedback(foldersIn.length);
+    this.sendElectron(ValidRequest.copyAllFiles, {
+      folder: folderIn,
+      name: nameIn,
+      folders: foldersIn,
+    });
+    const msg = 'Copying Directory...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  openFolder(feedback?: (s: string) => void): void {
+    this.setMaxForFeedback(0);
+
+    this.sendElectron(ValidRequest.openDirectory, {});
+    const msg = 'Opening Folder...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  loadSettings(feedback?: (s: string) => void): void {
+    this.setMaxForFeedback(0);
+
+    this.sendElectron(ValidRequest.getSettings, {});
+    const msg = 'Getting Settings...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  playSong(file, feedback?: (s: string) => void): void {
+    this.setMaxForFeedback(0);
+
+    this.sendElectron(ValidRequest.playAudio, { dir: file });
+    const msg = 'Playing Audio...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  getFilesByType(file, fileContains, feedback?: (s: string) => void): void {
+    this.setMaxForFeedback(0);
+
+    this.sendElectron(ValidRequest.getFilesByType, {
+      dir: file,
+      type: fileContains,
+    });
+    const msg = 'Getting Files...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  getSongData(file, feedback?: (s: string) => void): void {
+    this.setMaxForFeedback(0);
+
+    this.sendElectron(ValidRequest.getMusicData, { dir: file });
+    const msg = 'Getting Audio Data...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  saveSongData(file, tags, feedback?: (s: string) => void): void {
+    this.setMaxForFeedback(0);
+
+    this.sendElectron(ValidRequest.setMusicData, {
+      dir: file,
+      tagsObject: tags,
+    });
+    const msg = 'Saving Audio Data...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  sendElectron(keyIn: string, options: any): void {
+    options.key = keyIn;
+    this.communicator.sendToElectron(options);
+  }
 
   getSortableObjects(result: any): any[] {
     const sortableObjects = [];
@@ -106,6 +274,201 @@ export class DataProcessorService {
     return musicObject;
   }
 
+  // name: string; // is also id, if duplicate, it should just pick 1?
+  // dir: string;
+  // newDir: string;
+  // tagObjects: TagObject[];
+  // isMissingTags: boolean;
+  // isMoved: boolean;
+  // isSelected: boolean;
+  // isClicked: boolean;
+  // name: string; // actual value
+  // group: string; // suggestion object
+  // metaDataGroup: string; // title, so on, comment
+  getMetadataObject(o: any, suggestionsObject: any): MetadataObject {
+    const data = {
+      name: o.file ? this.getFileName(o.file) : '',
+      dir: o.file ? o.file : '',
+      newDir: o.file ? o.file : '',
+      tagObjects: this.getTagObjects(o.data, suggestionsObject),
+      isMissingTags: false,
+      isMoved: false,
+      isSelected: false,
+      isClicked: false,
+    };
+
+    return data;
+  }
+
+  getMetadataObjectSimple(
+    o: any,
+    suggestionsObject: any
+  ): MetadataObjectSimple {
+    const data = {
+      name: o.file ? this.getFileName(o.file) : '',
+      dir: o.file ? o.file : '',
+      newDir: o.file ? o.file : '',
+      tagObjects: this.getTagObjectsSimple(o.data, suggestionsObject),
+      isMissingTags: false,
+      isMoved: false,
+      isSelected: false,
+      isClicked: false,
+    };
+
+    return data;
+  }
+
+  getMetadataObjects(result, suggestionsObject): MetadataObject[] {
+    const all = [] as MetadataObject[];
+    for (const row of result) {
+      const m = this.getMetadataObject(row, suggestionsObject);
+      all.push(m);
+    }
+    return all;
+  }
+
+  getMetadataObjectsSimple(result, suggestionsObject): [][] {
+    const all = [];
+    for (const row of result) {
+      const m = this.getMetadataObjectSimple(row, suggestionsObject);
+      all.push(m);
+    }
+    return all;
+  }
+
+  getMetadataMatrix(result, suggestionsObject): any {
+    const suggestionHeaders = Object.keys(suggestionsObject);
+    const simpleHeaders = [
+      'title',
+      'artist',
+      'album',
+      'genre',
+      'bpm',
+      'initialKey',
+    ];
+    const allHeaders = simpleHeaders.concat(suggestionHeaders);
+    allHeaders.push('dir');
+    const all = [];
+    for (const row of result) {
+      const arr = this.getTagObjectsSimple(row.data, suggestionsObject);
+      arr.push(row.file);
+      all.push(arr);
+    }
+    return [allHeaders, all];
+  }
+
+  getTagObjects(o: any, suggestionsObject: any): TagObject[] {
+    // simple
+    const title = o.title ? o.title : '';
+    const artist = o.artist ? o.artist : '';
+    const album = o.album ? o.album : '';
+    const genre = o.genre ? o.genre : '';
+    const bpm = o.bpm ? o.bpm : '';
+    const initialKey = o.initialKey ? o.initialKey : '';
+
+    // comment
+    let commentAsArr = [];
+
+    if (o.comment) {
+      commentAsArr = o.comment.text
+        ? this.getMetadataCommentAsArray(o.comment.text)
+        : [];
+    }
+
+    const suggestionHeaders = Object.keys(suggestionsObject);
+    const simpleHeaders = [
+      'title',
+      'artist',
+      'album',
+      'genre',
+      'bpm',
+      'initialKey',
+    ];
+    const allHeaders = simpleHeaders.concat(suggestionHeaders);
+
+    const simpleValues = [title, artist, album, genre, bpm, initialKey];
+    const suggestionValues = this.getSuggestionValues(
+      commentAsArr,
+      suggestionsObject,
+      suggestionHeaders
+    );
+    const allValues = simpleValues.concat(suggestionValues);
+
+    const arr = [] as TagObject[];
+    for (let i = 0; i < allHeaders.length; i++) {
+      const header = allHeaders[i];
+      const value = allValues[i];
+      const tagObject = { name: value, group: header } as TagObject;
+      arr.push(tagObject);
+    }
+
+    return arr;
+  }
+
+  getTagObjectsSimple(o: any, suggestionsObject: any): string[] {
+    // simple
+    const title = o.title ? o.title : '';
+    const artist = o.artist ? o.artist : '';
+    const album = o.album ? o.album : '';
+    const genre = o.genre ? o.genre : '';
+    const bpm = o.bpm ? o.bpm : '';
+    const initialKey = o.initialKey ? o.initialKey : '';
+
+    // comment
+    let commentAsArr = [];
+
+    if (o.comment) {
+      commentAsArr = o.comment.text
+        ? this.getMetadataCommentAsArray(o.comment.text)
+        : [];
+    }
+
+    const suggestionHeaders = Object.keys(suggestionsObject);
+    const simpleHeaders = [
+      'title',
+      'artist',
+      'album',
+      'genre',
+      'bpm',
+      'initialKey',
+    ];
+    const allHeaders = simpleHeaders.concat(suggestionHeaders);
+
+    const simpleValues = [title, artist, album, genre, bpm, initialKey];
+    const suggestionValues = this.getSuggestionValues(
+      commentAsArr,
+      suggestionsObject,
+      suggestionHeaders
+    );
+    const allValues = simpleValues.concat(suggestionValues);
+
+    const arr = [];
+    for (let i = 0; i < allHeaders.length; i++) {
+      arr.push(allValues[i]);
+    }
+
+    return arr;
+  }
+
+  getSuggestionValues(
+    commentAsArr,
+    suggestionsObject,
+    suggestionHeaders
+  ): string[] {
+    const all = [];
+    for (const key of suggestionHeaders) {
+      const values = suggestionsObject[key];
+      const selected = [];
+      for (const val of values) {
+        if (this.helper.isInArray(val, commentAsArr)) {
+          selected.push(val);
+        }
+      }
+      all.push(selected.join(','));
+    }
+    return all;
+  }
+
   showPopup(titleIn, message, codeIn): void {
     const dialogMessage = {
       title: titleIn,
@@ -115,6 +478,7 @@ export class DataProcessorService {
     this.dialog.openDialog(dialogMessage).then((reply) => {});
   }
 
+  // must be in the same order (objects and searchstrings)
   getFilteredMusic(musicSortables: any, lessThan: boolean): void {
     return musicSortables.filter((item) => {
       for (const val of this.searchStringsArray) {
@@ -194,13 +558,6 @@ export class DataProcessorService {
 
   // max should be something like file array to load length
   setFeedback(isLoading: boolean, message: any): void {
-    if (!isLoading) {
-      this.progress = 100;
-    }
-    if (isLoading) {
-      this.progress = 0;
-      this.feedbackCounter = 0;
-    }
     if (message) {
       this.feedbackCounter++;
       this.updateProgress(this.feedbackCounter, this.maxFeedbackLimit);
@@ -213,7 +570,16 @@ export class DataProcessorService {
     }
   }
 
+  updateProgress(count: number, max: number): void {
+    if (max > 0) {
+      const percentageProgress = (count * 100) / max;
+      this.progress = Math.round(percentageProgress);
+    }
+  }
+
   setMaxForFeedback(max: number): void {
+    console.log(max);
+    this.progress = 0;
     this.feedbackCounter = 0;
     this.maxFeedbackLimit = max;
   }
@@ -232,11 +598,6 @@ export class DataProcessorService {
 
   getProgressSubscription(): Observable<number> {
     return this.progressObservable;
-  }
-
-  updateProgress(count: number, max: number): void {
-    const percentageProgress = (count * 100) / max;
-    this.progress = Math.round(percentageProgress);
   }
 
   setUnsubscribeTidy(subscriptions: Subscription[]): void {
@@ -359,6 +720,28 @@ export class DataProcessorService {
     }
     // last push
     matrix.push({ title: currentGroup, value: currentRow });
+
+    return matrix;
+  }
+
+  // TODO: useful: transform object of objects to matrix array of objects
+  getSuggestionsAsObject(suggestionsFromFile: any): any {
+    const arr = this.getSuggestionsAsArray(suggestionsFromFile);
+
+    let currentGroup = arr[0].group;
+    const matrix = {};
+    let currentRow = [];
+    for (const suggestionObj of arr) {
+      const group = suggestionObj.group;
+      if (currentGroup !== group) {
+        matrix[currentGroup] = currentRow;
+        currentGroup = group;
+        currentRow = [];
+      }
+      currentRow.push(suggestionObj.name);
+    }
+    // last push
+    matrix[currentGroup] = currentRow;
 
     return matrix;
   }

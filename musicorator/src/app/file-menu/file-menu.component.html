@@ -1,0 +1,46 @@
+<span class="footer-feedback" style="color: grey"> {{ feedbackMessage }}</span>
+<div class="footer">
+  <button
+    mat-fab
+    color="warn"
+    appAntiSpamClick
+    [debounceTime]="300"
+    (debounceClick)="openFolder()"
+    aria-label="Play"
+  >
+    <mat-icon>folder_open</mat-icon>
+  </button>
+
+  <button
+    mat-raised-button
+    color="primary"
+    appAntiSpamClick
+    [debounceTime]="300"
+    (debounceClick)="copyToFolder()"
+  >
+    Copy Files
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    appAntiSpamClick
+    [debounceTime]="300"
+    (debounceClick)="moveToFolder()"
+  >
+    Move Files
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    appAntiSpamClick
+    [debounceTime]="300"
+    (debounceClick)="showCsv()"
+  >
+    Get CSV
+  </button>
+
+  <app-progress
+    [currentFeedback]="feedbackMessage"
+    [max]="maxProgress"
+  ></app-progress>
+</div>

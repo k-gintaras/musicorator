@@ -1,0 +1,49 @@
+<div class="container-fluid unselectable">
+  <div class="row" style="margin-bottom: 10px">
+    <button
+      class="low-height"
+      [ngStyle]="
+        currentRow.title === row.title
+          ? {
+              'font-weight': 'bold',
+              'font-size': '13px',
+              'line-height': '30px'
+            }
+          : {
+              'font-weight': 'normal',
+              'font-size': '13px',
+              'line-height': '30px'
+            }
+      "
+      mat-raised-button
+      *ngFor="let row of matrix"
+      (click)="setCurrentRow(row)"
+    >
+      {{ row.title }}
+    </button>
+  </div>
+  <div class="row">
+    <div class="col-2">
+      {{ currentRow.title }}
+    </div>
+    <div class="col-10">
+      <mat-chip-list>
+        <mat-chip
+          *ngFor="let tag of currentRow.value"
+          (click)="
+            tryAddValidatedWithGroup(tag, resultsArray, false); showNext()
+          "
+          [ngStyle]="{
+            color: 'white',
+            border: isThisTagSelected(tag.name) ? '2px solid black' : '',
+            'background-color': tag.color,
+            'min-height': '25px',
+            'font-size': 'small'
+          }"
+        >
+          {{ tag.name }}
+        </mat-chip>
+      </mat-chip-list>
+    </div>
+  </div>
+</div>

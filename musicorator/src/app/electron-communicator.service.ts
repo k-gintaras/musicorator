@@ -3,31 +3,13 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { HelperService } from './helper.service';
 import { SuggestionService } from './tagging-from-file/suggestion.service';
 import { TestDataService } from './test-data.service';
+import { ValidRequest } from './ValidRequest';
 // const ipc = (window as any).require('electron').ipcRenderer;
-
-export enum ValidRequest {
-  responseFromMain = 'responseFromMain',
-  openDirectory = 'openDirectoryResponsibly',
-  getDirectoryAllFiles = 'getDirectoryAllFiles',
-  createFolder = 'createFolder',
-  getLastfmWebsite = 'getLastfmWebsite',
-  getWebsite = 'getWebsite',
-  playAudio = 'playAudio',
-  getFilesByType = 'getFilesByType',
-  getMusicData = 'getMusicData',
-  setMusicData = 'setMusicData',
-  getAllMusicData = 'getAllMusicData',
-  copyAllFiles = 'copyAllFiles',
-}
-
 @Injectable({
   providedIn: 'root',
 })
 export class ElectronCommunicatorService {
-  communicatorKeys = ['', ''];
   ipc;
-  messages = new BehaviorSubject<string>('');
-  directory = new BehaviorSubject<string>('');
   mainResponseObservable;
 
   // these needed to simulate data if you just use ng serve

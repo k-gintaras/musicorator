@@ -16,6 +16,7 @@ let {
   doPlayAudio,
   openPathInShell,
   copyAllFiles,
+  getAllMusicData,
 } = require('./files-promises');
 
 // a must have
@@ -73,7 +74,6 @@ app.on('activate', function () {
   }
 });
 
-// TODO: COMMAND LISTENERS
 ipcMain.on('requestFromRenderer', (event, optionsObj) => {
   const validRequests = [
     'openDirectory',
@@ -87,6 +87,9 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
     'setMusicData',
     'getAllMusicData',
     'copyAllFiles',
+    'getSettings',
+    'saveSettings',
+    'getFeedback',
   ];
   // optionsObj={
   //  anyName:any,
@@ -139,7 +142,7 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
       startGetAllMusicData(optionsObj);
       break;
     case 'copyAllFiles':
-      startCopyAllFiles(optionsObj);
+      startCopyAllFilesWithFolder(optionsObj);
       break;
     case 'getSettings':
       startGetSettings(optionsObj);
@@ -153,34 +156,6 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
       break;
   }
 });
-
-// TODO: useful
-// function error(s) {
-//   if (s && canBigError) {
-//     popup("Error: ", s)
-//       .then()
-//       .catch((err) => {
-//         console.log(err);
-//       });
-//   } else {
-//     console.log("Error: ", "Unknown Electron App Error!");
-//   }
-// }
-
-// function popup(titleIn, messageIn) {
-//   console.log(messageIn);
-//   const msg = JSON.stringify(messageIn);
-//   return dialog
-//     .showMessageBox(null, {
-//       type: "warning",
-//       defaultId: 2,
-//       title: titleIn,
-//       message: msg,
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//     });
-// }
 
 function doRespondBackObject(keyIn, responseIn) {
   const responseObject = { key: keyIn, response: responseIn };
@@ -211,7 +186,7 @@ function startGetDirectoryAllFiles(options) {
         doRespondBackObject('getDirectoryAllFiles', fileArray);
       })
       .catch((err) => {
-        feedback(err.message);
+        feedback(err);
       });
   } else {
     feedback('Missing Get Files Data.');
@@ -278,7 +253,7 @@ function startGetFilesByType(options) {
 function startGetMusicData(options) {
   const dir = options.dir;
   if (dir) {
-    getMusicData(dir)
+    getMusicDataExtra(dir)
       .then((metadata) => {
         doRespondBackObject('getMusicData', metadata);
       })
@@ -299,7 +274,7 @@ function startSetMusicData(options) {
         doRespondBackObject('setMusicData', metadata);
       })
       .catch((err) => {
-        feedback(err.message);
+        feedback(err);
       });
   } else {
     feedback('Missing Set Track Data.');
@@ -308,44 +283,41 @@ function startSetMusicData(options) {
 
 function startGetAllMusicData(options) {
   feedback('Getting Files: ');
-  const promises = [];
-  const filesArray = options.folders;
 
-  if (filesArray) {
-    if (filesArray.length > 0) {
-      for (let i = 0; i < filesArray.length; i++) {
-        const file = filesArray[i];
-        const musicDataPromise = getMusicDataExtra(file)
-          .then((result) => {
-            feedback(dir);
-            return { file: dir, data: result };
-          })
-          .catch((err) => {
-            return { file: dir, data: err };
-          });
-        promises.push(musicDataPromise);
-      }
-
-      Promise.all(promises)
-        .then((result) => {
-          doRespondBackObject('getAllMusicData', result);
-        })
-        .catch((err) => {
-          feedback(err.message);
-        });
-    } else {
-      feedback('Missing Get All Track Data 2.');
-    }
+  if (okMusicRequest(options)) {
+    getAllMusicData(options.folders, feedback)
+      .then((result) => {
+        doRespondBackObject('getAllMusicData', result);
+      })
+      .catch((err) => {
+        feedback(err);
+      });
   } else {
-    feedback('Missing Get All Track Data 1.');
+    feedback('Not getting empty. ' + options);
   }
+}
+
+function okMusicRequest(options) {
+  if (options) {
+    const filesArray = options.folders;
+    if (filesArray) {
+      if (filesArray.length > 0) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function startCopyAllFiles(options) {
   feedback('Copying Files: ');
 
-  const validated = validateCopyFilesRequest(options);
-  if (validated) {
+  if (okCopyFilesRequest(options)) {
+    const folderWhere = options.folder;
+    const folderName = options.name;
+    const filesArray = options.folders;
+    const newFolder = getJoinedPath(folderWhere, folderName);
+
     copyAllFiles(folderWhere, folderName, filesArray, feedback)
       .then(() => {
         doRespondBackObject('copyAllFiles', 'Completed Copying.');
@@ -355,13 +327,28 @@ function startCopyAllFiles(options) {
         feedback(err);
       });
   } else {
-    feedback(
-      'Not copying empty. ' + folderWhere + ',' + folderName + ',' + filesArray
-    );
+    feedback('Not copying empty. ' + options);
   }
 }
 
-function validateCopyFilesRequest(options) {
+function startCopyAllFilesWithFolder(options) {
+  const where = options.folder;
+  const dirName = options.name;
+  if (where && dirName) {
+    doCreateFolder(where, dirName)
+      .then(() => {
+        doRespondBackObject('createFolder', 'Created Folder.');
+        startCopyAllFiles(options);
+      })
+      .catch((res) => {
+        feedback(res);
+      });
+  } else {
+    feedback('Not copying empty. ' + options);
+  }
+}
+
+function okCopyFilesRequest(options) {
   if (options) {
     const folderWhere = options.folder;
     const folderName = options.name;
@@ -373,41 +360,6 @@ function validateCopyFilesRequest(options) {
     }
   }
   return false;
-}
-
-function doGetFile(dir) {
-  getFile(dir)
-    .then((res) => {
-      doRespondBackObject('readFile', res);
-    })
-    .catch((res) => {
-      feedback(res);
-    });
-}
-
-function doSaveFile(dir, data) {
-  saveFile(dir, data)
-    .then((res) => {
-      doRespondBackObject('writeFile', res);
-    })
-    .catch((res) => {
-      feedback(res);
-    });
-}
-
-async function setupSettingFile() {
-  const currentFolder = getCurrentFolder();
-  const dir = getJoinedPath(currentFolder, settingsFileName);
-  const file = await getFile(dir).catch((err) => {
-    if (err) {
-      // doesnt exist
-      saveFile(dir, suggestionsJson).catch((err) => {
-        if (err) {
-          console.log('Can`t save settings. ' + err);
-        }
-      });
-    }
-  });
 }
 
 function startGetSettings() {
@@ -449,6 +401,21 @@ function startSaveSettings(dataObject) {
   } else {
     feedback('Not saving empty data.');
   }
+}
+
+async function setupSettingFile() {
+  const currentFolder = getCurrentFolder();
+  const dir = getJoinedPath(currentFolder, settingsFileName);
+  const file = await getFile(dir).catch((err) => {
+    if (err) {
+      // doesnt exist
+      saveFile(dir, suggestionsJson).catch((err) => {
+        if (err) {
+          console.log('Can`t save settings. ' + err);
+        }
+      });
+    }
+  });
 }
 
 function isValidJson(json) {

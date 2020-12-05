@@ -15,6 +15,66 @@ export class HelperService {
     });
   }
 
+  tryAddValidatedSimilar(
+    valIn: string,
+    arr: string[],
+    isRemoveNonUnique: boolean,
+    toLowerCase: boolean,
+    reasonableWordLength: number
+  ): void {
+    // add only if part does not exist
+    let canAdd = true;
+    for (let i = 0; i < arr.length; i++) {
+      const val = arr[i];
+      // reasonable word
+      if (valIn.length >= reasonableWordLength) {
+        // its part is in array,  oldest <<< [old,,,]
+        if (valIn.indexOf(val) > -1) {
+          arr[i] = valIn;
+          canAdd = false;
+          break;
+        }
+      } else {
+        canAdd = false;
+      }
+    }
+    if (canAdd) {
+      this.tryAddValidated(valIn, arr, isRemoveNonUnique, toLowerCase);
+    }
+  }
+
+  tryAddValidated(
+    value: string,
+    arr: string[],
+    isRemoveNonUnique: boolean,
+    toLowerCase: boolean
+  ): void {
+    const name = value;
+    const unique = this.isNotIn(name, arr);
+
+    if (unique) {
+      if ((name || '').trim()) {
+        let clean = name.trim();
+        if (toLowerCase) {
+          clean = clean.toLowerCase();
+        }
+        arr.push(clean);
+      }
+    } else {
+      if (isRemoveNonUnique) {
+        this.removeFromArr(name, arr);
+      }
+    }
+  }
+
+  removeFromArr(tag: string, arr: any[]): void {
+    const index = arr.indexOf(tag);
+
+    if (index > -1) {
+      arr.splice(index, 1);
+    }
+  }
+
   getOnlyUnique(arr: string[]): string[] {
     return arr.filter((value, index, self) => {
       return self.indexOf(value) === index;
@@ -145,5 +205,9 @@ export class HelperService {
     // .boolean { color: blue; }
     // .null { color: magenta; }
     // .key { color: red; }
+  }
+
+  getArrayCopy(arr: any): any[] {
+    return Object.assign([], arr);
   }
 }
