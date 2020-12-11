@@ -128,18 +128,22 @@ function openPathInShell(dir) {
   if (!shell) {
     shell = require('electron').shell;
   }
-  // shell.openPath(dir);
+  // shell.openPath(dir); is disabled on build
   const link = getJoinedPath('file://', dir);
-  shell.openExternal(link);
+  shell.openExternal(link).catch((res) => {
+    feedback("Can't open this: " + link);
+  });
 }
 
 function doPlayAudio(dir) {
   if (!shell) {
     shell = require('electron').shell;
   }
-  // shell.openPath(dir);
+  // shell.openPath(dir); is disabled on build
   const link = getJoinedPath('file://', dir);
-  shell.openExternal(link);
+  shell.openExternal(link).catch((res) => {
+    feedback("Can't open this audio: " + link);
+  });
 }
 
 function getJoinedPath(a, b) {

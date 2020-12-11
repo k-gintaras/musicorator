@@ -85,15 +85,19 @@ export class DataProcessorService {
     isLessThan: boolean
   ): any[][] {
     return matrixIn.filter((item) => {
+      const matches = [];
       for (const val of searchStringsArray) {
         const searchColumn = val.column;
         const b = val.search;
         if (b) {
           const pos = columnNames.indexOf(searchColumn);
+          // match only if matches all from search
           if (pos > -1) {
             const a = item[pos];
             const match = this.isMatch(a, b, isLessThan);
-            return match;
+            matches.push(match);
+
+            // return match;
             // if (a && a.indexOf(',') > -1) {
             //   const tags = b.split(',');
             //   for (const tag of tags) {
@@ -108,6 +112,12 @@ export class DataProcessorService {
             //   }
             // }
           }
+        }
+      }
+      // not all match, therefore not all filter passed
+      for (const val of matches) {
+        if (!val) {
+          return false;
         }
       }
       return true;

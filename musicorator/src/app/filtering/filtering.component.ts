@@ -53,25 +53,25 @@ export class FilteringComponent implements OnInit, OnDestroy {
     this.electronSubscriptions.push(this.setFeedbackListener());
     this.assistant.loadSettings(this.getFeedback());
 
-    this.loadTestMatrix();
+    // this.loadTestMatrix();
   }
 
-  loadTestMatrix() {
-    const data = this.test.testData2;
+  // loadTestMatrix() {
+  //   const data = this.test.testData2;
 
-    const result = this.assistant.getMetadataMatrix(
-      data,
-      this.suggestionObject
-    );
+  //   const result = this.assistant.getMetadataMatrix(
+  //     data,
+  //     this.suggestionObject
+  //   );
 
-    this.matrixTitles = result[0];
-    this.matrix = result[1];
-    this.filteredMatrix = result[1];
-    // console.log(response);
+  //   this.matrixTitles = result[0];
+  //   this.matrix = result[1];
+  //   this.filteredMatrix = result[1];
+  //   // console.log(response);
 
-    this.feedback('Got All Music From Directory.');
-    this.maxProgress = 0;
-  }
+  //   this.feedback('Got All Music From Directory.');
+  //   this.maxProgress = 0;
+  // }
 
   ngOnDestroy(): void {
     this.assistant.setUnsubscribeTidyWithElectron(this.electronSubscriptions);
@@ -257,7 +257,6 @@ export class FilteringComponent implements OnInit, OnDestroy {
       this.matrixTitles = result[0];
       this.matrix = result[1];
       this.filteredMatrix = result[1];
-      console.log(response);
 
       this.feedback('Got All Music From Directory.');
       this.maxProgress = 0;

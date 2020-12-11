@@ -65,6 +65,21 @@ export class MatrixJsonComponent implements OnInit, OnDestroy {
     }
   }
 
+  isThisGroupSelected(row): boolean {
+    const name = row.title;
+    const values = row.value;
+    for (const val of values) {
+      if (val) {
+        if (val.name) {
+          if (this.isIn(val.name, this.resultsArray)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   setSearchArray(groupIn, nameIn): void {
     this.searchArray.push({ search: nameIn, column: groupIn });
   }
