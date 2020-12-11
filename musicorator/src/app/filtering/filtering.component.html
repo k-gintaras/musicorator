@@ -1,6 +1,13 @@
-<div class="jumbotron">
-  <app-json-arranger [jsonMapArray]="suggestionsJson"></app-json-arranger>
-</div>
+<app-suggestion-filter
+  [suggestionMatrix]="suggestionMatrix"
+  [suggestionObject]="suggestionObject"
+  [matrixTitles]="matrixTitles"
+  [matrix]="matrix"
+  [filteredMatrix]="filteredMatrix"
+  (folderChange)="onFolderUpdate($event)"
+  (filesChange)="onFilesUpdate($event)"
+  (matrixChange)="onMatrixUpdate($event)"
+></app-suggestion-filter>
 
 <span class="footer-feedback" style="color: grey"> {{ feedbackMessage }}</span>
 <div class="footer">
@@ -24,7 +31,7 @@
   >
     Copy Files
   </button>
-  <button
+  <!-- <button
     mat-raised-button
     color="primary"
     appAntiSpamClick
@@ -32,7 +39,7 @@
     (debounceClick)="moveToFolder()"
   >
     Move Files
-  </button>
+  </button> -->
   <button
     mat-raised-button
     color="primary"

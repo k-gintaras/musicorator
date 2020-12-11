@@ -44,6 +44,7 @@ export class CommunicatorElectronService {
   }
 
   /**
+   * keep in mind that ngOnInit might not resubscribe to this
    * responseFromMain to use onDestroy in addition to unsubscribe
    */
   unsubscribeElectron(): void {

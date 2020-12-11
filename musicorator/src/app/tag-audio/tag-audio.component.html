@@ -1,0 +1,90 @@
+<div class="container">
+  <div *ngIf="isStepsOn" class="row">
+    <app-matrix-stepper
+      [resultsArray]="resultsArray"
+      [matrix]="matrix"
+      (selectedItem)="onStepperSelect($event)"
+    ></app-matrix-stepper>
+  </div>
+  <div *ngIf="isMatrixOn" class="row">
+    <app-matrix-json
+      [resultsArray]="resultsArray"
+      [matrix]="matrix"
+      (selectedItem)="onMatrixSelect($event)"
+    ></app-matrix-json>
+  </div>
+  <div *ngIf="isStepsOn || isMatrixOn" class="row tight-row">
+    <span class="col-2" style="font-weight: bold; font-size: small">
+      custom
+    </span>
+    <div class="col-10">
+      <mat-chip-list #customId>
+        <mat-chip
+          *ngFor="let item of getAudioSuggestions()"
+          (click)="tryAddValidated(item)"
+          style="color: white"
+          [ngStyle]="{
+            'background-color': 'grey',
+            'min-height': '25px',
+            'font-size': 'small'
+          }"
+          [removable]="true"
+          (removed)="removeCustom(item)"
+        >
+          {{ item }}
+        </mat-chip>
+        <input
+          style="max-width: 100px"
+          placeholder="New Type..."
+          [matChipInputFor]="customId"
+          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+          (matChipInputTokenEnd)="addCustom($event)"
+        />
+      </mat-chip-list>
+    </div>
+  </div>
+  <div *ngIf="isStepsOn || isMatrixOn" class="row tight-row">
+    <span class="col-2" style="font-weight: bold; font-size: small"
+      >current</span
+    >
+    <div class="col-10">
+      <mat-chip-list>
+        <mat-chip
+          *ngFor="let tag of resultsArray"
+          style="color: white"
+          (click)="remove(tag)"
+          [ngStyle]="{
+            'background-color': getColor(tag),
+            'min-height': '25px',
+            'font-size': 'small'
+          }"
+        >
+          {{ tag }}
+        </mat-chip>
+      </mat-chip-list>
+    </div>
+  </div>
+  <div class="row tight row">
+    <span class="col-2" style="padding-top: 5px; font-weight: bold">{{
+      getName()
+    }}</span>
+    <div *ngIf="isStepsOn || isMatrixOn" class="small-checkbox">
+      <mat-checkbox [(ngModel)]="isAutosort">Autosort</mat-checkbox>
+    </div>
+    <div class="small-checkbox">
+      <mat-checkbox [(ngModel)]="isAutoPlay">Auto Play</mat-checkbox>
+    </div>
+    <div *ngIf="isStepsOn || isMatrixOn" class="small-checkbox">
+      <mat-checkbox [(ngModel)]="isSaveOnEnter">Save On Enter</mat-checkbox>
+    </div>
+    <div *ngIf="isStepsOn || isMatrixOn" class="small-button" (click)="save()">
+      <mat-icon>save</mat-icon>
+    </div>
+    <div class="small-button" (click)="play()">
+      <mat-icon>play_arrow</mat-icon>
+    </div>
+    <span class="col-2" style="padding-top: 5px; font-size: small"
+      >Previous: '[', Next: ']', Save: 'Enter'</span
+    >
+  </div>
+</div>

@@ -28,19 +28,20 @@ export class MatrixJsonComponent implements OnInit, OnDestroy {
   @Input() matrix = [];
   @Input() isSearch = false;
   @Input() searchArray = [];
-  @Output() sendDataToParent = new EventEmitter<MatrixJsonObject>();
+  @Output() selectedItem = new EventEmitter<MatrixJsonObject>();
 
   ngOnInit(): void {}
+
   ngOnDestroy(): void {
-    if (this.sendDataToParent) {
-      this.sendDataToParent.unsubscribe();
+    if (this.selectedItem) {
+      this.selectedItem.unsubscribe();
     }
   }
 
-  onSelectedRow(item: any, selected: boolean): void {
+  onSelectedItem(item: any, selected: boolean): void {
     const updated = item as MatrixJsonClicked;
     updated.isSelected = selected;
-    this.sendDataToParent.emit(updated);
+    this.selectedItem.emit(updated);
   }
 
   tryAddValidatedWithGroup(value, arr, isRemoveNonUnique): void {
@@ -54,12 +55,12 @@ export class MatrixJsonComponent implements OnInit, OnDestroy {
         if (this.isSearch) {
           this.setSearchArray(value.group, clean);
         }
-        this.onSelectedRow(value, true);
+        this.onSelectedItem(value, true);
       }
     } else {
       if (isRemoveNonUnique) {
         this.removeFromArr(name, arr);
-        this.onSelectedRow(value, false);
+        this.onSelectedItem(value, false);
       }
     }
   }
@@ -95,7 +96,11 @@ export class MatrixJsonComponent implements OnInit, OnDestroy {
     return !(arr.indexOf(val) > -1);
   }
 
+  isIn(val: string, arr: string[]): boolean {
+    return arr.indexOf(val) > -1;
+  }
+
   isThisTagSelected(tag: string): boolean {
-    return !this.isNotIn(tag, this.resultsArray);
+    return this.isIn(tag, this.resultsArray);
   }
 }

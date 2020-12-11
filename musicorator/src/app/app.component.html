@@ -1,26 +1,18 @@
 <nav class="navbar navbar-dark bg-dark">
   <div class="navbar-brand">Musicorizer</div>
   <ul class="nav">
-    <li class="nav-item">
-      <a
-        class="nav-link"
-        routerLink="/music-sorter"
-        [routerLinkActive]="['nav-active']"
-        >Sorter</a
-      >
-    </li>
-    <li class="nav-item">
+    <!-- <li class="nav-item">
       <a
         class="nav-link"
         routerLink="/music-tagger-file"
         [routerLinkActive]="['nav-active']"
         >Tagger</a
       >
-    </li>
+    </li> -->
     <li class="nav-item">
       <a
         class="nav-link"
-        routerLink="/suggestions-manager"
+        routerLink="/suggestions"
         [routerLinkActive]="['nav-active']"
         >Suggestions Manager</a
       >
@@ -28,7 +20,7 @@
     <li class="nav-item">
       <a
         class="nav-link"
-        routerLink="/suggestion-filter"
+        routerLink="/filtering"
         [routerLinkActive]="['nav-active']"
         >Suggestions Filter</a
       >
@@ -37,4 +29,4 @@
 </nav>
 <router-outlet></router-outlet>
 
-<app-file-menu></app-file-menu>
+<!-- <app-file-menu></app-file-menu> -->

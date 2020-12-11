@@ -62,6 +62,8 @@ export class DataProcessorService {
     { column: 'tags', search: '' },
   ];
 
+  TABLE_EXTRA_VALUE_SPLITTER = ' ';
+
   constructor(
     private dialog: PopupService,
     private helper: HelperService,
@@ -91,25 +93,59 @@ export class DataProcessorService {
           if (pos > -1) {
             const a = item[pos];
             const match = this.isMatch(a, b, isLessThan);
-            if (a && a.indexOf(',') > -1) {
-              const tags = b.split(',');
-              for (const tag of tags) {
-                const matchTag = this.isMatch(a, tag, isLessThan);
-                if (!matchTag) {
-                  return false;
-                }
-              }
-            } else {
-              if (!match) {
-                return false;
-              }
-            }
+            return match;
+            // if (a && a.indexOf(',') > -1) {
+            //   const tags = b.split(',');
+            //   for (const tag of tags) {
+            //     const matchTag = this.isMatch(a, tag, isLessThan);
+            //     if (!matchTag) {
+            //       return false;
+            //     }
+            //   }
+            // } else {
+            //   if (!match) {
+            //     return false;
+            //   }
+            // }
           }
         }
       }
       return true;
     });
   }
+
+  // TODO: filter matrix useful
+  // setFilter(): void {
+  //   this.matrixOut = this.matrixIn.filter((item) => {
+  //     for (let i = 0; i < this.searchStringsArray.length; i++) {
+  //       const val = this.searchStringsArray[i];
+  //       const searchColumn = val.column;
+  //       const b = val.search;
+  //       if (b) {
+  //         const a = item[i];
+  //         const match = this.isMatch(a, b);
+  //         if (b.split(' ') > 0) {
+  //           if (a) {
+  //             const tags = b.split(' ');
+  //             for (const tag of tags) {
+  //               const matchTag = this.isMatch(a, tag);
+  //               if (!matchTag) {
+  //                 return false;
+  //               }
+  //             }
+  //           }
+  //         } else {
+  //           if (!match) {
+  //             return false;
+  //           }
+  //         }
+  //       }
+  //     }
+  //     return true;
+  //   });
+  //   this.onSearchFilter();
+  //   this.onDataChange();
+  // }
 
   loadAllMusicFiles(foldersIn: string[], feedback?: (s: string) => void): void {
     this.setMaxForFeedback(foldersIn.length);
@@ -214,12 +250,48 @@ export class DataProcessorService {
 
     this.sendElectron(ValidRequest.setMusicData, {
       dir: file,
-      tagsObject: tags,
+      tagsObject: this.getTagsFormatted(tags),
     });
     const msg = 'Saving Audio Data...';
     if (feedback) {
       feedback(msg);
     }
+  }
+
+  saveSettings(settingsObject, tagsJson, feedback?: (s: string) => void): void {
+    this.setMaxForFeedback(0);
+    settingsObject.tags = tagsJson;
+    this.sendElectron(ValidRequest.saveSettings, {
+      data: settingsObject,
+    });
+    const msg = 'Saving Settings...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  getTagsFormatted(arr: string[]): any {
+    if (arr) {
+      if (arr.length > 0) {
+        const trimedArr = arr.map((str) => str.trim().toLowerCase());
+        const tagString = trimedArr.join(',');
+
+        const updatedComment = {
+          language: 'eng',
+          shortText: '',
+          text: tagString,
+        };
+
+        // library requires top object // I didn't realize and ruined some files :D
+        // update just edits tags added, write overwrites and deletes the rest
+        const tags = {
+          COMM: updatedComment,
+          comment: updatedComment,
+        };
+        return tags;
+      }
+    }
+    return '';
   }
 
   sendElectron(keyIn: string, options: any): void {
@@ -336,8 +408,11 @@ export class DataProcessorService {
     return all;
   }
 
+  // TODO: process tags flow last array item is file
   getMetadataMatrix(result, suggestionsObject): any {
     const suggestionHeaders = Object.keys(suggestionsObject);
+    suggestionHeaders.push('other'); // some tags might not be from suggestions
+
     const simpleHeaders = [
       'title',
       'artist',
@@ -351,7 +426,7 @@ export class DataProcessorService {
     const all = [];
     for (const row of result) {
       const arr = this.getTagObjectsSimple(row.data, suggestionsObject);
-      arr.push(row.file);
+      arr.push(row.file); // last item is file
       all.push(arr);
     }
     return [allHeaders, all];
@@ -376,6 +451,8 @@ export class DataProcessorService {
     }
 
     const suggestionHeaders = Object.keys(suggestionsObject);
+    suggestionHeaders.push('other'); // some tags might not be from suggestions
+
     const simpleHeaders = [
       'title',
       'artist',
@@ -424,6 +501,36 @@ export class DataProcessorService {
     }
 
     const suggestionHeaders = Object.keys(suggestionsObject);
+
+    const simpleValues = [title, artist, album, genre, bpm, initialKey];
+    const suggestionValues = this.getSuggestionValues(
+      commentAsArr,
+      suggestionsObject,
+      suggestionHeaders
+    );
+
+    return simpleValues.concat(suggestionValues);
+  }
+
+  getTagObjectsSimpleOld(o: any, suggestionsObject: any): string[] {
+    // simple
+    const title = o.title ? o.title : '';
+    const artist = o.artist ? o.artist : '';
+    const album = o.album ? o.album : '';
+    const genre = o.genre ? o.genre : '';
+    const bpm = o.bpm ? o.bpm : '';
+    const initialKey = o.initialKey ? o.initialKey : '';
+
+    // comment
+    let commentAsArr = [];
+
+    if (o.comment) {
+      commentAsArr = o.comment.text
+        ? this.getMetadataCommentAsArray(o.comment.text)
+        : [];
+    }
+
+    const suggestionHeaders = Object.keys(suggestionsObject);
     const simpleHeaders = [
       'title',
       'artist',
@@ -450,23 +557,55 @@ export class DataProcessorService {
     return arr;
   }
 
+  // TODO: process tags flow extra tags in same group are joined by ' ', so that table can sort it properly
   getSuggestionValues(
     commentAsArr,
     suggestionsObject,
     suggestionHeaders
   ): string[] {
     const all = [];
+    let suggestionsAll = [];
     for (const key of suggestionHeaders) {
       const values = suggestionsObject[key];
       const selected = [];
+      suggestionsAll = suggestionsAll.concat(values);
       for (const val of values) {
         if (this.helper.isInArray(val, commentAsArr)) {
           selected.push(val);
         }
       }
-      all.push(selected.join(','));
+      all.push(selected.join(this.TABLE_EXTRA_VALUE_SPLITTER));
     }
+    const otherValues = [];
+    for (const val of commentAsArr) {
+      if (!this.helper.isInArray(val, suggestionsAll)) {
+        otherValues.push(val);
+      }
+    }
+    all.push(otherValues.join(this.TABLE_EXTRA_VALUE_SPLITTER));
     return all;
+  }
+
+  // TODO:  process tags flow extra tags in same group are joined by ' ', so that table can sort it properly
+  getTagsFromMatrixRow(matrixRow): string[] {
+    const arr = [];
+    if (matrixRow) {
+      if (matrixRow.length > 0) {
+        const tags = matrixRow.slice(6, matrixRow.length - 1);
+        const rearrangedArray = tags
+          .join(this.TABLE_EXTRA_VALUE_SPLITTER)
+          .split(this.TABLE_EXTRA_VALUE_SPLITTER); // some values are joined with space, because of the matrix to be sortable
+
+        return rearrangedArray.filter((res: string) => {
+          if (res) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+      }
+    }
+    return arr;
   }
 
   showPopup(titleIn, message, codeIn): void {
@@ -578,7 +717,6 @@ export class DataProcessorService {
   }
 
   setMaxForFeedback(max: number): void {
-    console.log(max);
     this.progress = 0;
     this.feedbackCounter = 0;
     this.maxFeedbackLimit = max;
@@ -600,6 +738,22 @@ export class DataProcessorService {
     return this.progressObservable;
   }
 
+  setUnsubscribeTidyWithElectron(subscriptions: Subscription[]): void {
+    if (subscriptions) {
+      for (const subscription of subscriptions) {
+        if (subscription) {
+          try {
+            subscription.unsubscribe();
+          } catch (error) {
+            console.log('Failed to unsubscribe electron.');
+            console.log(error);
+          }
+        }
+      }
+    }
+    this.communicator.unsubscribeElectron();
+  }
+
   setUnsubscribeTidy(subscriptions: Subscription[]): void {
     if (subscriptions) {
       for (const subscription of subscriptions) {
@@ -613,7 +767,6 @@ export class DataProcessorService {
         }
       }
     }
-    this.communicator.unsubscribeElectron();
   }
 
   /**

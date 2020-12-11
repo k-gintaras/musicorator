@@ -1,6 +1,7 @@
 import {
   Component,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   OnDestroy,
@@ -8,6 +9,12 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
+export enum KEY_CODE {
+  RIGHT_ARROW = 'ArrowRight',
+  LEFT_ARROW = 'ArrowLeft',
+  LEFT_BRACKET = '[',
+  RIGHT_BRACKET = ']',
+}
 @Component({
   selector: 'app-sortable-searchable-table',
   templateUrl: './sortable-searchable-table.component.html',
@@ -31,6 +38,10 @@ export class SortableSearchableTableComponent
   isMenuOpen = false;
   isShowCsv = false;
 
+  currentSelectedPosition = 0;
+
+  TABLE_EXTRA_VALUE_SPLITTER = ' ';
+
   constructor() {}
 
   ngOnInit(): void {
@@ -44,7 +55,12 @@ export class SortableSearchableTableComponent
     if (this.tableChange) {
       this.tableChange.unsubscribe();
     }
+    if (this.searchChange) {
+      this.searchChange.unsubscribe();
+    }
   }
+
+  // TODO: wrong on click
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.matrixIn) {
@@ -52,6 +68,48 @@ export class SortableSearchableTableComponent
         this.reset();
         this.onDataChange();
       }
+    }
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  keyEvent(event: KeyboardEvent): void {
+    if (event.key === KEY_CODE.RIGHT_BRACKET) {
+      this.next();
+    }
+
+    if (event.key === KEY_CODE.LEFT_BRACKET) {
+      this.previous();
+    }
+  }
+
+  previous(): void {
+    this.setNextOrPreviousTrack(-1);
+  }
+
+  next(): void {
+    this.setNextOrPreviousTrack(1);
+  }
+
+  setNextOrPreviousTrack(next: number): void {
+    this.setValidatedPosition(next);
+    const currentSelection = this.matrixOut[this.currentSelectedPosition];
+    this.setCurrentSelection(currentSelection);
+  }
+
+  setCurrentSelection(item): void {
+    if (item) {
+      this.onSelectedRow(item);
+    }
+  }
+
+  setValidatedPosition(next: number): void {
+    this.currentSelectedPosition += next;
+
+    if (this.currentSelectedPosition < 0) {
+      this.currentSelectedPosition = this.matrixOut.length - 1;
+    }
+    if (this.currentSelectedPosition > this.matrixOut.length - 1) {
+      this.currentSelectedPosition = 0;
     }
   }
 
@@ -136,6 +194,13 @@ export class SortableSearchableTableComponent
 
   onSelectedRow(item: string[]): void {
     this.currentTitle = item[0];
+    for (let i = 0; i < this.matrixOut.length; i++) {
+      const val = this.matrixOut[i];
+      const title = val[0];
+      if (title === this.currentTitle) {
+        this.currentSelectedPosition = i;
+      }
+    }
     this.selectedItem.emit(item);
   }
 
@@ -185,9 +250,9 @@ export class SortableSearchableTableComponent
         if (b) {
           const a = item[i];
           const match = this.isMatch(a, b);
-          if (searchColumn === 'tags') {
+          if (b.split(this.TABLE_EXTRA_VALUE_SPLITTER) > 0) {
             if (a) {
-              const tags = b.split(',');
+              const tags = b.split(this.TABLE_EXTRA_VALUE_SPLITTER);
               for (const tag of tags) {
                 const matchTag = this.isMatch(a, tag);
                 if (!matchTag) {

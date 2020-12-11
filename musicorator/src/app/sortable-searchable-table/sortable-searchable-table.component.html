@@ -1,14 +1,14 @@
 <div
-  style="background-color: white"
+  style="background-color: white; padding-left: 5px"
   class="clickable-text unselectable"
   (click)="isMenuOpen = !isMenuOpen"
 >
   Table Menu
 </div>
-<div *ngIf="isMenuOpen">
+<div *ngIf="isMenuOpen" style="background-color: white; padding-left: 5px">
   <div class="container-fluid">
-    <div class="row unselectable" style="margin: 2px">
-      <div style="padding: 2px; margin-right: 5px">Ignore Columns:</div>
+    <div class="row unselectable" style="padding: 4px">
+      <!-- <div style="padding: 2px; margin-right: 5px">Ignore Columns:</div>
       <div
         [ngStyle]="{
           border: isThisIgnored(item) ? '2px solid black' : '',
@@ -19,7 +19,26 @@
         class="clickable-text"
       >
         {{ item }}
-      </div>
+      </div> -->
+      <div style="margin-right: 10px">Ignore Columns:</div>
+
+      <mat-chip-list>
+        <mat-chip
+          *ngFor="let item of columnTitlesArray"
+          (click)="ignoreColumn(item)"
+          [ngStyle]="{
+            color: 'white',
+            border: isThisIgnored(item) ? '2px solid black' : '',
+            'background-color': 'grey',
+            'min-height': '20px',
+            'font-size': 'small',
+            margin: '1px',
+            padding: '4px'
+          }"
+        >
+          {{ item }}
+        </mat-chip>
+      </mat-chip-list>
     </div>
     <div class="row">
       <button mat-raised-button (click)="isShowCsv = !isShowCsv">

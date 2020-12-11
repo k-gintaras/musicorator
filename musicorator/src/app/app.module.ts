@@ -42,6 +42,10 @@ import { MatrixStepperComponent } from './matrix-stepper/matrix-stepper.componen
 import { MatrixJsonComponent } from './matrix-json/matrix-json.component';
 import { FileMenuComponent } from './file-menu/file-menu.component';
 import { ProgressComponent } from './progress/progress.component';
+import { TagAudioComponent } from './tag-audio/tag-audio.component';
+import { JsonArrangerComponent } from './json-arranger/json-arranger.component';
+import { SuggestionsComponent } from './suggestions/suggestions.component';
+import { FilteringComponent } from './filtering/filtering.component';
 
 @NgModule({
   declarations: [
@@ -62,6 +66,10 @@ import { ProgressComponent } from './progress/progress.component';
     MatrixJsonComponent,
     FileMenuComponent,
     ProgressComponent,
+    TagAudioComponent,
+    JsonArrangerComponent,
+    SuggestionsComponent,
+    FilteringComponent,
   ],
   imports: [
     BrowserModule,

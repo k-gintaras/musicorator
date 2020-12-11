@@ -1,0 +1,17 @@
+<div class="jumbotron">
+  <app-json-arranger
+    (updatedJson)="onUpdatedJson($event)"
+    [jsonMapArray]="suggestionsJson"
+  ></app-json-arranger>
+</div>
+
+<span class="footer-feedback" style="color: grey"> {{ feedbackMessage }}</span>
+<div class="footer">
+  <button mat-fab color="primary" (click)="save()" aria-label="button">
+    <mat-icon>save</mat-icon>
+  </button>
+  <app-progress
+    [currentFeedback]="feedbackMessage"
+    [max]="maxProgress"
+  ></app-progress>
+</div>

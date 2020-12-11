@@ -89,6 +89,23 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   margin-left: 15px;
 }
 
+.small-checkbox {
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.left-menu {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 5px;
+  border: 1px solid lightgrey;
+  left: 0;
+  position: fixed;
+  top: 10%;
+  padding: 5px;
+  z-index: 999;
+}
+
 .footer {
   background-color: rgba(255, 255, 255, 0.9);
   border-radius: 5px;
@@ -129,6 +146,16 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   border-radius: 100%;
   border: 1px solid lightgrey;
   display: inline-block;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+
+  /*
+     Introduced in Internet Explorer 10.
+     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+   */
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .mini-button:hover {
@@ -179,6 +206,15 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   top: 0px;
 }
 
+.selectable {
+  -webkit-touch-callout: all; /* iOS Safari */
+  -webkit-user-select: all; /* Safari */
+  -khtml-user-select: all; /* Konqueror HTML */
+  -moz-user-select: all; /* Firefox */
+  -ms-user-select: all; /* Internet Explorer/Edge */
+  user-select: all; /* Chrome and Opera */
+}
+
 .small-button {
   height: 30px;
   width: 30px;
@@ -190,6 +226,16 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   border-radius: 100%;
   cursor: pointer;
   border: 1px solid lightgrey;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+
+  /*
+     Introduced in Internet Explorer 10.
+     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+   */
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .drag-box {

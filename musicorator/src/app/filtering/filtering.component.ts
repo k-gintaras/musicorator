@@ -1,16 +1,18 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { interval, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { CommunicatorElectronService } from '../communicator-electron.service';
 import { DataProcessorService } from '../data-processor.service';
-import { FileDataService } from '../file-data.service';
+import { HelperService } from '../helper.service';
+import { PopupService } from '../popup/popup.service';
+import { TestDataService } from '../test-data.service';
 import { ValidRequest } from '../ValidRequest';
 
 @Component({
-  selector: 'app-file-menu',
-  templateUrl: './file-menu.component.html',
-  styleUrls: ['./file-menu.component.css'],
+  selector: 'app-filtering',
+  templateUrl: './filtering.component.html',
+  styleUrls: ['./filtering.component.css'],
 })
-export class FileMenuComponent implements OnInit, OnDestroy {
+export class FilteringComponent implements OnInit, OnDestroy {
   electronSubscriptions;
 
   // get file customizations
@@ -19,15 +21,20 @@ export class FileMenuComponent implements OnInit, OnDestroy {
   feedbackMessage = '';
 
   // files
-  currentFolder;
-  currentFiles;
+  currentFolder = '';
+  currentFiles = [];
   suggestionsJson;
-  currentSuggestions;
-  currentSuggestionMatrix;
+  suggestionObject;
+  suggestionMatrix;
   currentNewFolder;
-  filteredMatrix;
 
-  filteredFiles;
+  // audio matrix
+  matrixTitles = [];
+  matrix = [];
+  filteredMatrix = [];
+  matrixForCsv = [];
+
+  filteredFiles = [];
 
   // progress
   maxProgress = 100;
@@ -35,16 +42,35 @@ export class FileMenuComponent implements OnInit, OnDestroy {
   constructor(
     private electronCommunicator: CommunicatorElectronService,
     private assistant: DataProcessorService,
-    private fs: FileDataService
+    private helper: HelperService,
+    private dialog: PopupService,
+    private test: TestDataService
   ) {}
 
   ngOnInit(): void {
     this.electronSubscriptions = [];
     this.electronSubscriptions.push(this.setElectronListener());
     this.electronSubscriptions.push(this.setFeedbackListener());
-    this.electronSubscriptions.push(this.setFilteredFilesListener());
-    this.electronSubscriptions.push(this.setNewFolderListener());
     this.assistant.loadSettings(this.getFeedback());
+
+    this.loadTestMatrix();
+  }
+
+  loadTestMatrix() {
+    const data = this.test.testData2;
+
+    const result = this.assistant.getMetadataMatrix(
+      data,
+      this.suggestionObject
+    );
+
+    this.matrixTitles = result[0];
+    this.matrix = result[1];
+    this.filteredMatrix = result[1];
+    // console.log(response);
+
+    this.feedback('Got All Music From Directory.');
+    this.maxProgress = 0;
   }
 
   ngOnDestroy(): void {
@@ -57,16 +83,16 @@ export class FileMenuComponent implements OnInit, OnDestroy {
     });
   }
 
-  setFilteredFilesListener(): Subscription {
-    return this.fs.getFilteredFilesObservable().subscribe((r) => {
-      this.filteredFiles = r;
-    });
+  onFolderUpdate(name): void {
+    this.currentNewFolder = name;
   }
 
-  setNewFolderListener(): Subscription {
-    return this.fs.getNewFolderObservable().subscribe((r) => {
-      this.currentNewFolder = r;
-    });
+  onMatrixUpdate(matrix): void {
+    this.matrixForCsv = matrix;
+  }
+
+  onFilesUpdate(files): void {
+    this.filteredFiles = files;
   }
 
   openFolder(): void {
@@ -121,11 +147,22 @@ export class FileMenuComponent implements OnInit, OnDestroy {
   }
 
   moveToFolder(): void {
-    // this.currentNewFolder;
+    // TODO: copy folder version, move folder, is it really needed?
   }
 
   showCsv(): void {
-    // this.filteredMatrix
+    const csvMatrix = [this.matrixTitles].concat(this.matrixForCsv);
+    const csv = this.helper.getCsvFromMatrix(csvMatrix);
+    this.showPopup('CSV', '', csv);
+  }
+
+  showPopup(titleIn, message, codeIn): void {
+    const dialogMessage = {
+      title: titleIn,
+      list: [{ title: titleIn, content: message }],
+      code: codeIn,
+    };
+    this.dialog.openDialog(dialogMessage).then((reply) => {});
   }
 
   getFeedback(): (s: string) => void {
@@ -148,9 +185,7 @@ export class FileMenuComponent implements OnInit, OnDestroy {
       .subscribe((result) => {
         if (result) {
           this.handleResponse(result);
-          // this.setProgressAndFeedback(false, 'Got Settings.', false);
         } else {
-          // this.setProgressAndFeedback(false, 'Get Settings Failed.', false);
         }
       });
   }
@@ -190,14 +225,12 @@ export class FileMenuComponent implements OnInit, OnDestroy {
     if (response) {
       if (response.tags) {
         this.suggestionsJson = response.tags;
-        this.currentSuggestions = this.assistant.getSuggestionsAsObject(
+        this.suggestionObject = this.assistant.getSuggestionsAsObject(
           response.tags
         );
-        this.currentSuggestionMatrix = this.assistant.getSuggestionsAsMatrix(
+        this.suggestionMatrix = this.assistant.getSuggestionsAsMatrix(
           response.tags
         );
-        this.fs.setSuggestionsObject(this.currentSuggestions);
-        this.fs.setSuggestionsMatrix(this.currentSuggestionMatrix);
       }
     }
   }
@@ -205,7 +238,6 @@ export class FileMenuComponent implements OnInit, OnDestroy {
   handleOpenFolderResponse(response: any): void {
     if (response) {
       this.resetVariables();
-      this.fs.setCurrentFolder(response);
       this.currentFolder = response;
       this.feedback('Opened Directory.');
       // dont load instantly
@@ -219,10 +251,14 @@ export class FileMenuComponent implements OnInit, OnDestroy {
     if (response) {
       const result = this.assistant.getMetadataMatrix(
         response,
-        this.currentSuggestions
+        this.suggestionObject
       );
-      this.fs.setCurrentAudioData(response);
-      this.fs.setCurrentAudioDataMatrix(result);
+
+      this.matrixTitles = result[0];
+      this.matrix = result[1];
+      this.filteredMatrix = result[1];
+      console.log(response);
+
       this.feedback('Got All Music From Directory.');
       this.maxProgress = 0;
     }

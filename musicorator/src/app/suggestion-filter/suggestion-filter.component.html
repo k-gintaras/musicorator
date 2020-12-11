@@ -1,13 +1,64 @@
+<div class="left-menu">
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <div
+        class="small-button"
+        [ngClass]="
+          isStepsOn ? 'small-button selected' : 'small-button not-selected'
+        "
+        (click)="isStepsOn = !isStepsOn"
+      >
+        <mat-icon>short_text</mat-icon>
+      </div>
+    </li>
+    <li class="nav-item">
+      <div
+        class="small-button"
+        [ngClass]="
+          isMatrixOn ? 'small-button selected' : 'small-button not-selected'
+        "
+        (click)="isMatrixOn = !isMatrixOn"
+      >
+        <mat-icon>notes</mat-icon>
+      </div>
+    </li>
+    <li class="nav-item">
+      <div
+        class="small-button"
+        [ngClass]="
+          isSearchOn ? 'small-button selected' : 'small-button not-selected'
+        "
+        (click)="isSearchOn = !isSearchOn"
+      >
+        <mat-icon>search</mat-icon>
+      </div>
+    </li>
+  </ul>
+</div>
 <div class="container-fluid">
-  <div class="row">
+  <div class="jumbotron menu">
+    <div>
+      <app-tag-audio
+        [matrix]="suggestionMatrix"
+        [audioData]="currentAudioArray"
+        (savedAudio)="onSavedAudio($event)"
+        [isMatrixOn]="isMatrixOn"
+        [isStepsOn]="isStepsOn"
+      >
+      </app-tag-audio>
+    </div>
+    <!-- <div class="checkbox"><mat-checkbox [(ngModel)]="isVariable">Name</mat-checkbox></div>  -->
+  </div>
+  <div class="jumbotron" *ngIf="isSearchOn">
     <app-matrix-json
+      style="position: relative"
       [matrix]="suggestionMatrix"
       [isSearch]="true"
       [searchArray]="searchArray"
-      (sendDataToParent)="onJsonMatrixSelection($event)"
+      (selectedItem)="onJsonMatrixSelection($event)"
     ></app-matrix-json>
   </div>
-  <div class="row">
+  <div class="jumbotron">
     <app-sortable-searchable-table
       (selectedItem)="onTableSelection($event)"
       (tableChange)="onTableChange($event)"
@@ -19,3 +70,5 @@
     ></app-sortable-searchable-table>
   </div>
 </div>
+
+<!-- <tabs> <suggestion-filter><tag-editor>-->

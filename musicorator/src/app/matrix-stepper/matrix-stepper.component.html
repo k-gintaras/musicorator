@@ -1,20 +1,14 @@
-<div class="container-fluid unselectable">
+<div class="container-fluid unselectable" style="min-height: 100px">
   <div class="row" style="margin-bottom: 10px">
     <button
       class="low-height"
-      [ngStyle]="
-        currentRow.title === row.title
-          ? {
-              'font-weight': 'bold',
-              'font-size': '13px',
-              'line-height': '30px'
-            }
-          : {
-              'font-weight': 'normal',
-              'font-size': '13px',
-              'line-height': '30px'
-            }
-      "
+      [ngStyle]="{
+        'font-weight': currentRow.title === row.title ? 'bold' : 'normal',
+        'font-size': '13px',
+        'line-height': '25px',
+        'padding-left': '2px',
+        'padding-right': '2px'
+      }"
       mat-raised-button
       *ngFor="let row of matrix"
       (click)="setCurrentRow(row)"

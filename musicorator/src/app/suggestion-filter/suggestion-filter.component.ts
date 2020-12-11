@@ -1,8 +1,15 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { DataProcessorService } from '../data-processor.service';
 import { FileDataService } from '../file-data.service';
 import { HelperService } from '../helper.service';
+import { SavedAudio } from '../tag-audio/tag-audio.component';
 
 @Component({
   selector: 'app-suggestion-filter',
@@ -15,15 +22,17 @@ export class SuggestionFilterComponent implements OnInit, OnDestroy {
     private helper: HelperService,
     private fs: FileDataService
   ) {}
-  // electron
-  electronSubscriptions;
+  @Output() filesChange = new EventEmitter<any>();
+  @Output() matrixChange = new EventEmitter<any>();
+  @Output() folderChange = new EventEmitter<any>();
 
-  suggestionMatrix = [];
+  @Input() suggestionMatrix = [];
+  @Input() suggestionObject = [];
 
   // resultsMatrix
-  matrixTitles = [];
-  filteredMatrix = [];
-  matrix = [];
+  @Input() matrixTitles = [];
+  @Input() filteredMatrix = [];
+  @Input() matrix = [];
 
   // folder
   searchValues = [];
@@ -31,33 +40,89 @@ export class SuggestionFilterComponent implements OnInit, OnDestroy {
   // filter
   searchArray = [] as { column: string; search: string }[];
   tableSearchArray = [] as { column: string; search: string }[];
-  // resultsArray = [];
+  // current selection
+  currentAudioArray = [];
 
-  ngOnInit(): void {
-    this.electronSubscriptions = [];
-    this.electronSubscriptions.push(this.setMusicDataListener());
-    this.electronSubscriptions.push(this.setSettingsListener());
-  }
+  // display
+  isSearchOn = false;
+  isStepsOn = true;
+  isMatrixOn = false;
 
-  ngOnDestroy(): void {
-    this.assistant.setUnsubscribeTidy(this.electronSubscriptions);
-  }
+  ngOnInit(): void {}
+
+  ngOnDestroy(): void {}
 
   onTableSelection(row): void {
     if (row) {
       if (row.length) {
         if (row[row.length - 1]) {
-          const file = row[row.length - 1];
-          this.playSong(file);
+          // this.playSong(file);
+          // const file = row[row.length - 1];
+          this.currentAudioArray = row;
         }
       }
     }
   }
 
+  onSavedAudio(audio: SavedAudio): void {
+    if (audio) {
+      const dir = audio.dir;
+      const tags = audio.tags;
+      this.filteredMatrix.find((res) => {
+        if (res) {
+          if (res.length > 0) {
+            const curDir = res[res.length - 1];
+            if (dir === curDir) {
+              this.updateMatrixRow(res, tags);
+            }
+          }
+        }
+      });
+      this.matrix.find((res) => {
+        if (res) {
+          if (res.length > 0) {
+            const curDir = res[res.length - 1];
+            if (dir === curDir) {
+              this.updateMatrixRow(res, tags);
+            }
+          }
+        }
+      });
+    }
+  }
+
+  updateMatrixRow(row, tags): void {
+    const keys = Object.keys(this.suggestionObject);
+
+    const rearranged = this.assistant.getSuggestionValues(
+      tags,
+      this.suggestionObject,
+      keys
+    );
+    for (let i = 6; i < row.length - 1; i++) {
+      row[i] = rearranged[i - 6];
+    }
+  }
+
   onTableChange(filteredMatrix: any): void {
-    this.fs.setFilteredMatrix(filteredMatrix);
-    const filteredFiles = this.getFilteredFiles(filteredMatrix);
-    this.fs.setFilteredFiles(filteredFiles);
+    // this.fs.setFilteredMatrix(filteredMatrix);
+    // const filteredFiles = this.getFilteredFiles(filteredMatrix);
+    // this.fs.setFilteredFiles(filteredFiles);
+    this.setMatrixChange(filteredMatrix);
+    this.setFilesChange(filteredMatrix);
+  }
+
+  setFilesChange(filteredMatrix): void {
+    this.filesChange.emit(this.getFilteredFiles(filteredMatrix));
+  }
+
+  setMatrixChange(filteredMatrix): void {
+    this.matrixChange.emit(filteredMatrix);
+  }
+
+  setFolderChange(validated): void {
+    const folder = this.getFolderName(validated);
+    this.folderChange.emit(folder);
   }
 
   getFilteredFiles(matrix: any): string[] {
@@ -83,8 +148,9 @@ export class SuggestionFilterComponent implements OnInit, OnDestroy {
         this.helper.tryAddValidatedSimilar(res, validated, false, true, 3);
       }
     }
-    const folder = this.getFolderName(validated);
-    this.fs.setNewFolder(folder);
+    // const folder = this.getFolderName(validated);
+    // this.fs.setNewFolder(folder);
+    this.setFolderChange(validated);
   }
 
   getFolderName(arr: string[]): string {
@@ -92,24 +158,6 @@ export class SuggestionFilterComponent implements OnInit, OnDestroy {
       return 'new-folder';
     }
     return arr.join('-');
-  }
-
-  setMusicDataListener(): Subscription {
-    return this.fs.getAudioMatrixObservable().subscribe((res) => {
-      if (res) {
-        this.matrixTitles = res[0];
-        this.matrix = res[1];
-        this.filteredMatrix = this.matrix;
-      }
-    });
-  }
-
-  setSettingsListener(): Subscription {
-    return this.fs.getSuggestionMatrixObservable().subscribe((res) => {
-      if (res) {
-        this.suggestionMatrix = res;
-      }
-    });
   }
 
   onJsonMatrixSelection(row: { name: string; group: string }): void {
@@ -133,6 +181,6 @@ export class SuggestionFilterComponent implements OnInit, OnDestroy {
   }
 
   feedback(msg: any): void {
-    console.log(msg);
+    this.helper.feedback(msg);
   }
 }

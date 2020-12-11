@@ -15,6 +15,21 @@ export class HelperService {
     });
   }
 
+  getCsvFromMatrix(m: any): string {
+    if (m) {
+      if (m.length > 0) {
+        if (m[0][0]) {
+          const all = [];
+          for (const row of m) {
+            all.push(row.join(','));
+          }
+          return all.join('\n') + '\n';
+        }
+      }
+    }
+    return '';
+  }
+
   tryAddValidatedSimilar(
     valIn: string,
     arr: string[],
@@ -22,6 +37,9 @@ export class HelperService {
     toLowerCase: boolean,
     reasonableWordLength: number
   ): void {
+    if (toLowerCase) {
+      valIn = valIn.toLowerCase();
+    }
     // add only if part does not exist
     let canAdd = true;
     for (let i = 0; i < arr.length; i++) {
@@ -49,6 +67,9 @@ export class HelperService {
     isRemoveNonUnique: boolean,
     toLowerCase: boolean
   ): void {
+    if (toLowerCase) {
+      value = value.toLowerCase();
+    }
     const name = value;
     const unique = this.isNotIn(name, arr);
 
@@ -76,6 +97,14 @@ export class HelperService {
   }
 
   getOnlyUnique(arr: string[]): string[] {
+    // don't use empty
+    arr = arr.filter((res: string) => {
+      if (res) {
+        return true;
+      } else {
+        return false;
+      }
+    });
     return arr.filter((value, index, self) => {
       return self.indexOf(value) === index;
     });
@@ -209,5 +238,34 @@ export class HelperService {
 
   getArrayCopy(arr: any): any[] {
     return Object.assign([], arr);
+  }
+
+  /**
+   *
+   * https://stackoverflow.com/questions/14446511/most-efficient-method-to-groupby-on-an-array-of-objects
+   * @description
+   * Takes an Array<V>, and a grouping function,
+   * and returns a Map of the array grouped by the grouping function.
+   *
+   * @param list An array of type V.
+   * @param keyGetter A Function that takes the the Array type V as an input, and returns a value of type K.
+   *                  K is generally intended to be a property key of V.
+   *
+   * @returns Map of the array grouped by the grouping function.
+   */
+  // export function groupBy<K, V>(list: Array<V>, keyGetter: (input: V) => K): Map<K, Array<V>> {
+  //    const map = new Map<K, Array<V>>();
+  groupBy(list, keyGetter): any {
+    const map = new Map();
+    list.forEach((item) => {
+      const key = keyGetter(item);
+      const collection = map.get(key);
+      if (!collection) {
+        map.set(key, [item]);
+      } else {
+        collection.push(item);
+      }
+    });
+    return map;
   }
 }
