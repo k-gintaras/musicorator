@@ -47,6 +47,9 @@ export class FilteringComponent implements OnInit, OnDestroy {
     private test: TestDataService
   ) {}
 
+  // TODO: on matrix filter, let matrix reset, because otherwise matrix just gets reduced to nothing
+  // button reset matrix ?
+
   ngOnInit(): void {
     this.electronSubscriptions = [];
     this.electronSubscriptions.push(this.setElectronListener());

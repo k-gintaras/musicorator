@@ -48,6 +48,7 @@ export class SuggestionFilterComponent implements OnInit, OnDestroy {
   isStepsOn = true;
   isMatrixOn = false;
 
+  // TODO: on ad custom, let autosort
   ngOnInit(): void {}
 
   ngOnDestroy(): void {}
