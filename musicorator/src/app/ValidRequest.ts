@@ -6,6 +6,7 @@ export enum ValidRequest {
   getLastfmWebsite = 'getLastfmWebsite',
   getWebsite = 'getWebsite',
   playAudio = 'playAudio',
+  playPlaylist = 'playPlaylist',
   getFilesByType = 'getFilesByType',
   getMusicData = 'getMusicData',
   setMusicData = 'setMusicData',

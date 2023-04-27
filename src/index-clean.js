@@ -19,6 +19,8 @@ let {
   getAllMusicData,
 } = require('./files-promises');
 
+const MusicPlayer = require('./audio-player');
+
 // a must have
 let { app, ipcMain } = require('electron');
 
@@ -129,6 +131,9 @@ ipcMain.on('requestFromRenderer', (event, optionsObj) => {
     case 'playAudio':
       startPlayAudio(optionsObj);
       break;
+    case 'playPlaylist':
+      startPlaylist(optionsObj);
+      break;
     case 'getFilesByType':
       startGetFilesByType(optionsObj);
       break;
@@ -231,6 +236,22 @@ function startPlayAudio(options) {
     doPlayAudio(dir);
   } else {
     feedback('Missing Play Data.');
+  }
+}
+
+function startPlaylist(options) {
+  const dir = options.dir;
+  if (dir) {
+    doPlayPlaylist(dir);
+  } else {
+    feedback('Missing Playlist Data.');
+  }
+}
+
+const audioPlayer = null;
+function doPlayPlaylist(dir) {
+  if (!audioPlayer) {
+    player = new MusicPlayer(dir);
   }
 }
 

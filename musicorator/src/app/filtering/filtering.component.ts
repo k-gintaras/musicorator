@@ -159,6 +159,15 @@ export class FilteringComponent implements OnInit, OnDestroy {
     this.showPopup('CSV', '', csv);
   }
 
+  playPlaylist(): void {
+    const file = this.filteredFiles;
+    if (file) {
+      this.assistant.playPlaylist(file, (res) => {
+        this.helper.feedback(res);
+      });
+    }
+  }
+
   showPopup(titleIn, message, codeIn): void {
     const dialogMessage = {
       title: titleIn,

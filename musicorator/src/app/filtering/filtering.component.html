@@ -49,6 +49,15 @@
   >
     Get CSV
   </button>
+  <button
+    mat-raised-button
+    color="primary"
+    appAntiSpamClick
+    [debounceTime]="300"
+    (debounceClick)="playPlaylist()"
+  >
+    Play
+  </button>
 
   <app-progress
     [currentFeedback]="feedbackMessage"

@@ -38,12 +38,15 @@ export class DataProcessorService {
   feedbackCounter = 0;
   maxFeedbackLimit = 0;
   private feedbackSubject = new BehaviorSubject<string>('');
-  private feedbackObservable: Observable<string> = this.feedbackSubject.asObservable();
+  private feedbackObservable: Observable<string> =
+    this.feedbackSubject.asObservable();
   private progressSubject = new BehaviorSubject<number>(0);
-  private progressObservable: Observable<number> = this.progressSubject.asObservable();
+  private progressObservable: Observable<number> =
+    this.progressSubject.asObservable();
   // in case there is need to send some messages
   private commonMessageSubject = new BehaviorSubject<string>('');
-  private commonMessageObservable: Observable<string> = this.commonMessageSubject.asObservable();
+  private commonMessageObservable: Observable<string> =
+    this.commonMessageSubject.asObservable();
 
   private musicDataResult;
 
@@ -227,6 +230,16 @@ export class DataProcessorService {
 
     this.sendElectron(ValidRequest.playAudio, { dir: file });
     const msg = 'Playing Audio...';
+    if (feedback) {
+      feedback(msg);
+    }
+  }
+
+  playPlaylist(files, feedback?: (s: string) => void): void {
+    this.setMaxForFeedback(0);
+
+    this.sendElectron(ValidRequest.playPlaylist, { dir: files });
+    const msg = 'Playing Playlist...';
     if (feedback) {
       feedback(msg);
     }
