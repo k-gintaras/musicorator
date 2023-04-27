@@ -1,0 +1,4 @@
+music autoplay-- u have to know song duration to be able to autoplay next
+go back to main page after going to filter manager (now cant go back)
+optimize: dont need to load songs at all, just have separate file with song data and song dir
+add tooltips for buttons, sometimes not sure what they do

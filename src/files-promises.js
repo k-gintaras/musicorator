@@ -80,8 +80,10 @@ function getAllMusicData(filesArray, feedbackCallback) {
         return { file: currentFile, data: result };
       })
       .catch((err) => {
+        f('Getting Error: ' + err);
         return { file: currentFile, data: err };
       });
+    f('Loading: ' + i + '/' + filesArray.length - 1 + ': ' + currentFile);
     promises.push(musicDataPromise);
   }
 

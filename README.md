@@ -23,13 +23,13 @@ cd app-name
 
 ng new app-name
 
-(Get-Content './app-name/src/index.html').replace('&lt;base href="/"&gt;', '&lt;base href="./"&gt;') | Set-Content './app-name/src/index.html'
+(Get-Content './app-name/src/index.html').replace('base href="/"', 'base href="./"') | Set-Content './app-name/src/index.html'
 
 (Get-Content './app-name/angular.json').replace('"outputPath": "dist/app-name",', '"outputPath": "../dist",') | Set-Content './app-name/angular.json'
 
 (Get-Content './src/index.js').replace('index.html', '../dist/index.html') | Set-Content './src/index.js'
 
-(Get-Content './package.json').replace('"scripts": {', '"scripts": "electron": "npm --prefix ./app-name/ run build &amp;&amp; npm --prefix ./ start",') | Set-Content './package.json'
+(Get-Content './package.json').replace('"scripts": {', '"scripts":  {"electron": "npm --prefix ./app-name/ run build &amp;&amp; npm --prefix ./ start",') | Set-Content './package.json'
 
 (Get-Content './package.json').replace('"packagerConfig": {},', '"packagerConfig": {"ignore": ["/app-name"]},') | Set-Content './package.json'
 
