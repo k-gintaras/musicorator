@@ -254,3 +254,6 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   cursor: pointer;
   padding: 3px;
 }
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
