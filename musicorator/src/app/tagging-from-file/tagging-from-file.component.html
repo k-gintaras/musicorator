@@ -20,8 +20,10 @@
       <div class="row tight-row">
         <div class="col-2" style="font-weight: bold">current</div>
         <div class="col-10">
-          <mat-chip-list>
-            <mat-chip
+          <!-- <mat-chip-listbox>
+        <mat-chip-option -->
+          <mat-chip-grid>
+            <mat-chip-row
               *ngFor="let tag of resultsArray"
               style="color: white"
               (click)="remove(tag)"
@@ -32,8 +34,8 @@
               }"
             >
               {{ tag }}
-            </mat-chip>
-          </mat-chip-list>
+            </mat-chip-row>
+          </mat-chip-grid>
         </div>
       </div>
 

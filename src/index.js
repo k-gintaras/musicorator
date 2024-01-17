@@ -420,9 +420,7 @@ function copyFileExtra(fromWhereWithFileName, toWhereWithFileName) {
   }
   return copyFile(fromWhereWithFileName, toWhereWithFileName)
     .then(() => {
-      feedback(
-        'Moved: ' + fromWhereWithFileName + ' to: ' + toWhereWithFileName
-      );
+      feedback('Moved: ' + fromWhereWithFileName + ' to: ' + toWhereWithFileName);
     })
     .catch((err) => {
       feedback(err);

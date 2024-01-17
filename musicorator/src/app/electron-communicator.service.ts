@@ -4,6 +4,11 @@ import { HelperService } from './helper.service';
 import { SuggestionService } from './tagging-from-file/suggestion.service';
 import { TestDataService } from './test-data.service';
 import { ValidRequest } from './ValidRequest';
+declare global {
+  interface Window {
+    electron: any;
+  }
+}
 // const ipc = (window as any).require('electron').ipcRenderer;
 @Injectable({
   providedIn: 'root',
@@ -14,9 +19,13 @@ export class ElectronCommunicatorService {
 
   // these needed to simulate data if you just use ng serve
   private electronReceiveSimulatorSubject = new BehaviorSubject<any>('');
-  private electronReceiveSimulatorObservable: Observable<any> = this.electronReceiveSimulatorSubject.asObservable();
+  private electronReceiveSimulatorObservable: Observable<any> =
+    this.electronReceiveSimulatorSubject.asObservable();
   private electronSendSimulatorSubject = new BehaviorSubject<any>('');
-  private electronSendSimulatorObservable: Observable<any> = this.electronSendSimulatorSubject.asObservable();
+  private electronSendSimulatorObservable: Observable<any> =
+    this.electronSendSimulatorSubject.asObservable();
+
+  private removeListenerFunctions: { [key: string]: () => void } = {};
 
   constructor(
     private zone: NgZone,
@@ -24,14 +33,30 @@ export class ElectronCommunicatorService {
     private t: TestDataService,
     private suggestionService: SuggestionService
   ) {
-    if ((window as any).require) {
-      try {
-        this.ipc = (window as any).require('electron').ipcRenderer;
-      } catch (error) {
-        console.log(error);
-      }
+    this.initializeIpc();
+
+    // if ((window as any).require) {
+    //   try {
+    //     // this.ipc = ipcRenderer;
+    //     this.ipc = (window as any).require('electron').ipcRenderer;
+    //     // this.ipc = this.electronService.ipcRenderer;
+    //   } catch (error) {
+    //     console.log(
+    //       'WTFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
+    //     );
+    //     console.log(error);
+    //   }
+    // } else {
+    //   console.log('Could not load electron ipc');
+    // }
+  }
+
+  private initializeIpc(): void {
+    // Access ipcRenderer via the contextBridge exposed API
+    if (window.electron) {
+      this.ipc = window.electron;
     } else {
-      console.log('Could not load electron ipc');
+      console.log('Could not load Electron ipc');
     }
   }
 
@@ -86,22 +111,50 @@ export class ElectronCommunicatorService {
   }
 
   listenElectron(key: string): Observable<any> {
-    const observable = new Observable((subscriber) => {
+    return new Observable((subscriber) => {
       try {
-        this.ipc.on(key, (event, arg) => {
+        const removeListener = window.electron.receive(key, (arg) => {
           this.zone.run(() => {
             subscriber.next(arg);
-            // subscriber.complete(); if you want to stop from listening next values
+            console.log('Received message from electron:', arg);
           });
         });
+
+        // Store the removeListener function to use it later for unsubscribing
+        this.removeListenerFunctions[key] = removeListener;
       } catch (error) {
-        this.feedback('Electron Communicator Error: ' + error);
-        subscriber.next('listenToElectronConstantly() Error: ' + key);
-        subscriber.complete();
+        console.error('7 Electron Communicator Error:', error);
+        subscriber.error(error);
       }
     });
-    return observable;
   }
+
+  unsubscribeElectron(key: string): void {
+    if (this.removeListenerFunctions[key]) {
+      this.removeListenerFunctions[key]();
+      delete this.removeListenerFunctions[key];
+    }
+  }
+
+  // listenElectron(key: string): Observable<any> {
+  //   const observable = new Observable((subscriber) => {
+  //     try {
+  //       this.ipc.on(key, (event, arg) => {
+  //         this.zone.run(() => {
+  //           subscriber.next(arg);
+  //           console.log('received message from electron');
+  //           console.log(arg);
+  //           // subscriber.complete(); if you want to stop from listening next values
+  //         });
+  //       });
+  //     } catch (error) {
+  //       this.feedback('Electron Communicator Error: ' + error);
+  //       subscriber.next('listenToElectronConstantly() Error: ' + key);
+  //       subscriber.complete();
+  //     }
+  //   });
+  //   return observable;
+  // }
 
   /**
    * responseFromMain
@@ -117,7 +170,7 @@ export class ElectronCommunicatorService {
           });
         });
       } catch (error) {
-        this.feedback('Electron Communicator Error: ' + error);
+        this.feedback('4 Electron Communicator Error: ' + error);
         subscriber.next('listenElectronResponsibly() Error: ' + key);
         subscriber.complete();
       }
@@ -128,11 +181,11 @@ export class ElectronCommunicatorService {
   /**
    * responseFromMain to use onDestroy in addition to unsubscribe
    */
-  unsubscribeElectron(): void {
-    if (this.mainResponseObservable) {
-      this.ipc.removeListener('responseFromMain', this.mainResponseObservable);
-    }
-  }
+  // unsubscribeElectron(): void {
+  //   if (this.mainResponseObservable) {
+  //     this.ipc.removeListener('responseFromMain', this.mainResponseObservable);
+  //   }
+  // }
 
   listenAngular(key: string): Observable<any> {
     const responseObject = {
@@ -166,7 +219,7 @@ export class ElectronCommunicatorService {
             break;
         }
       } catch (error) {
-        this.feedback('Electron Communicator Error: ' + error);
+        this.feedback('5 Electron Communicator Error: ' + error);
         subscriber.next('listenToElectronConstantly Error: ' + key);
         subscriber.complete();
       }
@@ -224,7 +277,7 @@ export class ElectronCommunicatorService {
           break;
       }
     } catch (error) {
-      this.feedback('Electron Communicator Error: ' + error);
+      this.feedback('6 Electron Communicator Error: ' + error);
       this.electronReceiveSimulatorSubject.next(
         'listenToElectronConstantly Error: ' + key
       );

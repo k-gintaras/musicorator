@@ -1,6 +1,5 @@
 // stop chrome complaining
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
-
 let {
   getFiles,
   getFilesByType,
@@ -37,11 +36,14 @@ const suggestionsJson =
 function initWindow() {
   const { format } = require('url');
   const { BrowserWindow } = require('electron');
+  const path = require('path');
+
   //frame:false to disable windows header with close and stuff
   appWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
+      preload: path.join(__dirname, '../preload.js'), // Adjust the path as necessary
       nodeIntegration: true,
     },
     title: 'Musicorator',

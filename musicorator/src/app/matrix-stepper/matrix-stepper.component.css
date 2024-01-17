@@ -1,0 +1,19 @@
+.tab-container {
+  margin-bottom: 10px;
+  white-space: nowrap;
+  display: flex; /* Aligns buttons in a row */
+}
+
+.tab-button {
+  width: 80px;
+  font-size: 12px;
+  line-height: 25px;
+  padding: 0 5px;
+  margin-right: 5px;
+  box-sizing: border-box;
+  flex-shrink: 0; /* Prevents the button from shrinking */
+}
+
+.tab-button.active {
+  font-weight: bold;
+}

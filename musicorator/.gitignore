@@ -1,5 +1,7 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
+# newly added angular babel stuff i dont have a clue about, thousands of files
+/.angular
 # compiled output
 /dist
 /tmp

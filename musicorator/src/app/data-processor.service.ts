@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { CommunicatorElectronService } from './communicator-electron.service';
-import { ElectronCommunicatorService } from './electron-communicator.service';
 import { HelperService } from './helper.service';
 import {
   MetadataObject,
@@ -774,7 +773,7 @@ export class DataProcessorService {
         }
       }
     }
-    this.communicator.unsubscribeElectron();
+    // this.communicator.unsubscribeElectron();
   }
 
   setUnsubscribeTidy(subscriptions: Subscription[]): void {

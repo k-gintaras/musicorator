@@ -23,7 +23,6 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
 // other
-import { NgxElectronModule } from 'ngx-electron';
 
 // components and services
 import { DragEditUniqueChipsComponent } from './drag-edit-unique-chips/drag-edit-unique-chips.component';
@@ -81,7 +80,6 @@ import { FilteringComponent } from './filtering/filtering.component';
     BrowserAnimationsModule,
     MatButtonModule,
     MatTableModule,
-    NgxElectronModule,
     MatDialogModule,
     MatSnackBarModule,
     MatCheckboxModule,

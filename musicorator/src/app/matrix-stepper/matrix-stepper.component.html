@@ -1,14 +1,8 @@
 <div class="container-fluid unselectable" style="min-height: 100px">
-  <div class="row" style="margin-bottom: 10px">
+  <div class="row tab-container">
     <button
-      class="low-height"
-      [ngStyle]="{
-        'font-weight': currentRow.title === row.title ? 'bold' : 'normal',
-        'font-size': '13px',
-        'line-height': '25px',
-        'padding-left': '2px',
-        'padding-right': '2px'
-      }"
+      class="tab-button"
+      [class.active]="currentRow.title === row.title"
       mat-raised-button
       *ngFor="let row of matrix"
       (click)="setCurrentRow(row)"
@@ -16,13 +10,14 @@
       {{ row.title }}
     </button>
   </div>
+
   <div class="row">
     <div class="col-2">
       {{ currentRow.title }}
     </div>
     <div class="col-10">
-      <mat-chip-list>
-        <mat-chip
+      <mat-chip-grid>
+        <mat-chip-row
           *ngFor="let tag of currentRow.value"
           (click)="
             tryAddValidatedWithGroup(tag, resultsArray, false); showNext()
@@ -36,8 +31,8 @@
           }"
         >
           {{ tag.name }}
-        </mat-chip>
-      </mat-chip-list>
+        </mat-chip-row>
+      </mat-chip-grid>
     </div>
   </div>
 </div>

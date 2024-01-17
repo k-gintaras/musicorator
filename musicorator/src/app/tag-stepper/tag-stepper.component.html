@@ -27,8 +27,8 @@
       {{ currentRow.title }}
     </div>
     <div class="col-10">
-      <mat-chip-list>
-        <mat-chip
+      <mat-chip-grid>
+        <mat-chip-row
           *ngFor="let tag of currentRow.value"
           (click)="
             tryAddValidatedWithGroup(tag, resultsArray, false); showNext()
@@ -42,15 +42,17 @@
           }"
         >
           {{ tag.name }}
-        </mat-chip>
-      </mat-chip-list>
+        </mat-chip-row>
+      </mat-chip-grid>
     </div>
   </div>
   <hr />
   <div class="row" style="padding-left: 10px">
-    <mat-chip-list #customId>
+    <!-- <mat-chip-listbox>
+        <mat-chip-option -->
+    <mat-chip-grid #customId>
       <span style="font-weight: bold; padding-right: 5px"> custom </span>
-      <mat-chip
+      <mat-chip-row
         *ngFor="let item of songSuggestions.concat(custom)"
         (click)="tryAddValidated(item, resultsArray, true)"
         style="color: white"
@@ -63,7 +65,7 @@
         (removed)="removeCustom(item)"
       >
         {{ item }}
-      </mat-chip>
+      </mat-chip-row>
       <input
         style="max-width: 100px"
         placeholder="New Type..."
@@ -71,7 +73,7 @@
         [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
         (matChipInputTokenEnd)="addCustom($event)"
       />
-    </mat-chip-list>
+    </mat-chip-grid>
   </div>
 </div>
 
