@@ -1,0 +1,22 @@
+.title-col {
+  border: 2px solid transparent; /* Default border to keep layout consistent */
+}
+
+.selected-group {
+  border-color: black;
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tag-chip {
+  color: white;
+  min-height: 25px;
+  font-size: small;
+}
+
+.selected-tag {
+  border: 2px solid black;
+}

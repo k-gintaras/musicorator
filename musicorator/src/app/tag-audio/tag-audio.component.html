@@ -64,28 +64,35 @@
       </mat-chip-list>
     </div>
   </div>
-  <div class="row tight row">
-    <span class="col-2" style="padding-top: 5px; font-weight: bold">{{
-      getName()
-    }}</span>
-    <div *ngIf="isStepsOn || isMatrixOn" class="small-checkbox">
+  <div class="control-panel">
+    <span class="label">{{ getName() }}</span>
+
+    <div *ngIf="isStepsOn || isMatrixOn" class="checkbox">
       <mat-checkbox [(ngModel)]="isAutosort">Autosort</mat-checkbox>
     </div>
-    <div class="small-checkbox">
+
+    <div class="checkbox">
       <mat-checkbox [(ngModel)]="isAutoPlay">Auto Play</mat-checkbox>
     </div>
-    <div *ngIf="isStepsOn || isMatrixOn" class="small-checkbox">
+
+    <div *ngIf="isStepsOn || isMatrixOn" class="checkbox">
       <mat-checkbox [(ngModel)]="isSaveOnEnter">Save On Enter</mat-checkbox>
     </div>
-    <div *ngIf="isStepsOn || isMatrixOn" class="small-button" (click)="save()">
-      <mat-icon>save</mat-icon>
+
+    <div *ngIf="isStepsOn || isMatrixOn" class="icon-button">
+      <button mat-icon-button (click)="save()">
+        <mat-icon>save</mat-icon>
+      </button>
     </div>
-    <div class="small-button" (click)="play()">
-      <mat-icon>play_arrow</mat-icon>
+
+    <div class="icon-button">
+      <button mat-icon-button (click)="play()">
+        <mat-icon>play_arrow</mat-icon>
+      </button>
     </div>
-    <span class="col-2" style="padding-top: 5px; font-size: small"
-      >Previous: '[', Next: ']', Save: 'Enter'</span
-    >
+
+    <span class="hint">Previous: '[', Next: ']', Save: 'Enter'</span>
   </div>
-  <div>npm i ang-music-player</div>
+
+  <!-- <div>npm i ang-music-player</div> -->
 </div>
