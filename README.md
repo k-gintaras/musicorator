@@ -1,191 +1,92 @@
-# Setup
+# Musicorator
 
-## Setup with powershell
+A desktop application built with Electron and Angular for efficient music organization through customizable tagging. Tag your music quickly, create playlists based on tags, and preview files seamlessly while organizing your collection.
 
-The setup is made into commands and maybe later will be explained in steps to take in text format.
+## Key Features
 
-```powershell
+- **Quick Tagging**: Rapidly assign tags with automatic group switching for efficient workflow
+- **Custom Tag Groups**: Create personalized tag categories like "speed" (fast, slow) or "mood" (energetic, calm)
+- **File Preview**: Open files directly in your default OS application while tagging
+- **Playlist Generation**: Create playlists based on tag combinations
+- **Data Export**: Export your tagged music lists to CSV format
 
-mkdir app-name
+## Example usage
 
-cd app-name
+- **Quick Tagging**:
+  ![tagging](/showcase-images/musicorator-tagging.gif)
 
-npx create-electron-app app-name
-npm install library-for-index-js-not-for-angular
+- **Quick Tagging With Extra**:
+  ![tagging-extra](/showcase-images/musicorator-tagging-extra.gif)
 
-cd app-name
+- **Finding types and creating playlist**:
+  ![finding-moving](/showcase-images/musicorator-finding-moving.gif)
 
-```
+- **Searching**:
+  ![searching](/showcase-images/musicorator-searching.gif)
 
-// angular name here will be same, don’t cd to it
+- **Sorting**:
+  ![sorting](/showcase-images/musicorator-sorting.gif)
 
-```powershell
+- **Customizing tags**:
+  ![tag-management](/showcase-images/musicorator-tag-management.gif)
 
-ng new app-name
+## Installation
 
-(Get-Content './app-name/src/index.html').replace('base href="/"', 'base href="./"') | Set-Content './app-name/src/index.html'
+1. Clone the repository:
 
-(Get-Content './app-name/angular.json').replace('"outputPath": "dist/app-name",', '"outputPath": "../dist",') | Set-Content './app-name/angular.json'
+   ```bash
+   git clone <repository_url>
+   cd musicorator
+   ```
 
-(Get-Content './src/index.js').replace('index.html', '../dist/index.html') | Set-Content './src/index.js'
+2. Install dependencies:
 
-(Get-Content './package.json').replace('"scripts": {', '"scripts":  {"electron": "npm --prefix ./app-name/ run build &amp;&amp; npm --prefix ./ start",') | Set-Content './package.json'
+   ```bash
+   npm install
+   ```
 
-(Get-Content './package.json').replace('"packagerConfig": {},', '"packagerConfig": {"ignore": ["/app-name"]},') | Set-Content './package.json'
+3. Start the application:
+   ```bash
+   npm run electron
+   ```
 
-Remove-Item -Path './src/index.html'
+## How to Use
 
-Remove-Item -Path './src/index.css'
+1. **Set Up Tags**:
 
-```
+   - Create custom tag groups (e.g., speed, mood)
+   - Define tags within each group
 
-## Test and build
+2. **Tag Your Music**:
 
-// to quick test
+   - Open a music directory
+   - Select tags from your defined groups
+   - Preview files by clicking to open in default player
+   - App automatically switches to next tag group for faster workflow
 
-```powershell
+3. **Create Playlists**:
+   - Filter music by tags
+   - Generate playlists based on your selections
+   - Export to CSV for use in other applications
 
-cd app-name
-ng serve
+## Technical Stack
 
-```
+- **Frontend**: Angular
+- **Desktop Framework**: Electron
+- **File Handling**: Native OS integration for file previews
+- **Future Storage**: SQL-based (planned)
 
-to test
-don’t cd to app-name
+## Future Development
 
-```powershell
+- Directory-based tagging using SQL
+- Support for other media types (images, documents)
+- Advanced tag combination filtering
+- Additional tagging categories for different media types
 
-npm run electron
+## License
 
-```
+MIT License
 
-to try exe slow 10-20 min, then available at windows
+---
 
-```powershell
-
-npm run make
-
-```
-
-to try exe fast
-
-```powershell
-
-npm run package
-
-```
-
-## Don't forget
-
-TO communicate with electron
-
-```powershell
-
-cd app-name
-ng g service electron-communicator
-npm install ngx-electron
-npm install @angular/forms
-
-```
-
-```typescript
-
-import { FormsModule } from '@angular/forms';
-imports: [BrowserModule, AppRoutingModule, FormsModule],
-
-```
-
-when copy base app from github
-
-```powershell
-
-cd to-correct-dir
-npm install
-
-```
-
-## Beware of common mistakes
-
-beware of typescript strict
-
-```json
-
-tsconfig.json
-"compilerOptions": {
-"baseUrl": "./",
-"outDir": "./dist/out-tsc",
-"forceConsistentCasingInFileNames": true,
-"strict": false,
-"angularCompilerOptions": {
-"strictInjectionParameters": false,
-"strictInputAccessModifiers": false,
-"strictTemplates": false
-}
-
-```
-
-beware of angular versions in package.json
-or just copy and replace angular into app-name folder and edit tsconfig to correct out dir for build and index to ./
-
-```json
-
-"dependencies": {
-"@angular/animations": "^11.0.2",
-"@angular/cdk": "^10.2.7",
-"@angular/common": "~11.0.1",
-"@angular/compiler": "~11.0.1",
-"@angular/core": "~11.0.1",
-"@angular/forms": "^11.0.2",
-"@angular/material": "^10.2.7",
-"@angular/platform-browser": "~11.0.1",
-"@angular/platform-browser-dynamic": "~11.0.1",
-"@angular/router": "~11.0.1",
-"bootstrap": "^4.5.3",
-"ngx-electron": "^2.2.0",
-"rxjs": "~6.6.0",
-"tslib": "^2.0.0",
-"zone.js": "~0.10.2"
-},
-
-```
-
-beware of
-`angular.json`
-
-```json
-
-"styles": [
-"./node_modules/bootstrap/dist/css/bootstrap.min.css",
-"./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-"./src/styles.css"
-],
-
-    "projectType": "application",
-    "schematics": {
-    "@schematics/angular:application": {
-        "strict": false
-    }
-    },
-
-```
-
-beware of
-`index.html`
-
-```html
-<base href="./" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="icon" type="image/x-icon" href="./favicon.ico" />
-```
-
-If you keep app-name as app-name
-beware that `package.json` ignore, ignores correct folder, or electron will build huge app with all `node_modules` and stuff not just from `"dist"`
-
-## You might want to install these
-
-```powershell
-
-npm install --save @angular/material @angular/cdk @angular/animations
-npm install bootstrap --save
-
-```
+**Note**: This is a development version. Future updates will introduce SQL-based storage and expanded media type support.
